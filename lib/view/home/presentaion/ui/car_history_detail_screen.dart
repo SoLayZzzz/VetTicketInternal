@@ -200,6 +200,8 @@ class CarHistoryDetailScreen extends StatelessWidget {
             time: '(07:30:00)',
             address:
                 'National Road 5 , Romchek 4 village, Sangkat Rattanak, Battambang City , Battambang',
+            latitude: 11.568280,
+            longitude: 104.890670,
           ),
           const SizedBox(height: 14),
           const _StationCard(
@@ -207,6 +209,8 @@ class CarHistoryDetailScreen extends StatelessWidget {
             name: 'Phnom Penh (Cannon Rifle Roundabout Park)',
             time: '(11:30:00)',
             address: 'Oknha Dekcho Ei (St. 76), Phnom Penh, Cambodia',
+            latitude: 11.5703975,
+            longitude: 104.8980857,
           ),
           const SizedBox(height: 14),
           Container(
@@ -301,12 +305,16 @@ class _StationCard extends StatelessWidget {
     required this.name,
     required this.time,
     required this.address,
+    required this.latitude,
+    required this.longitude,
   });
 
   final String title;
   final String name;
   final String time;
   final String address;
+  final double latitude;
+  final double longitude;
 
   @override
   Widget build(BuildContext context) {
@@ -339,7 +347,15 @@ class _StationCard extends StatelessWidget {
                 ),
               ),
               InkWell(
-                onTap: () => Get.toNamed(AppRoutes.car_history_map_screen),
+                onTap: () => Get.toNamed(
+                  AppRoutes.car_history_map_screen,
+                  arguments: {
+                    'lat': latitude,
+                    'lng': longitude,
+                    'label': name,
+                    'address': address,
+                  },
+                ),
                 child: const Text(
                   'មើលផែនទី',
                   style: TextStyle(

@@ -1,20 +1,3 @@
-// import 'package:get/get.dart';
-// import 'package:vet_internal_ticket/core/local/get_storage_service.dart';
-// import 'package:vet_internal_ticket/core/network/network_data_source.dart';
-// import 'package:vet_internal_ticket/utils/preference/app_pref.dart';
-// import 'package:vet_internal_ticket/view/auth/data/repositoriesImpl/user_repositoryImpl.dart';
-// import 'package:vet_internal_ticket/view/auth/domain/repsositories/user_repository.dart';
-
-// class AppBinding extends Bindings {
-//   @override
-//   void dependencies() {
-//     Get.put(GetStorageService(), permanent: true);
-//     Get.put<UserRepository>(UserRepositoryimpl(Get.find()), permanent: true);
-//     Get.put(NetworkDataSource(Get.find()), permanent: true);
-//     Get.put(AppPref(), permanent: true);
-//   }
-// }
-
 import 'package:get/get.dart';
 import 'package:vet_internal_ticket/core/local/get_storage_service.dart';
 import 'package:vet_internal_ticket/core/network/network_data_source.dart';
@@ -34,8 +17,6 @@ class AppBinding extends Bindings {
     Get.put(AppPref(), permanent: true);
 
     Get.put(PrinterSettingController());
-
-
 
     Get.put<UserRepository>(UserRepositoryimpl(Get.find()), permanent: true);
     Get.put(NetworkDataSource(Get.find()), permanent: true);

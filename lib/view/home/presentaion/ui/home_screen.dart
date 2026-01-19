@@ -20,7 +20,7 @@ class HomeScreen extends GetView<HomeController> {
   Widget build(BuildContext context) {
     return Scaffold(
       key: _scaffoldKey,
-      drawer: DrawerMenu(),
+      drawer: const DrawerMenu(),
       appBar: _buildAppBar(),
       body: Padding(
         padding: const EdgeInsets.symmetric(

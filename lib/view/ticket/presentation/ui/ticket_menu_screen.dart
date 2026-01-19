@@ -1,6 +1,5 @@
 // ignore_for_file: prefer_const_constructors, unrelated_type_equality_checks
 
-
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:vet_internal_ticket/app_icons.dart';
@@ -42,7 +41,7 @@ class TicketMenuScreen extends GetView<TicketMenuController> {
             _buildSelectDate(),
 
             // button search
-            _buildButton(),
+            _buildSearch(),
           ],
         ),
       ),
@@ -245,7 +244,7 @@ class TicketMenuScreen extends GetView<TicketMenuController> {
         ),
       );
 
-  _buildButton() {
+  _buildSearch() {
     return Padding(
       padding: const EdgeInsets.only(top: 30),
       child: Button(
