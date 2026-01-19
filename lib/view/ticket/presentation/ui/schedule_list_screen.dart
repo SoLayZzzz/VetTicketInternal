@@ -17,13 +17,8 @@ class ScheduleListScreen extends GetView<ScheduleController> {
         leading: IconButton(
             icon: const Icon(Icons.arrow_back_ios,
                 color: AppColors.whiteColor, size: Dimension.iconSize20),
-            // onPressed: () => Get.back(),
             onPressed: () {
-              if (controller.uiState.value.isReturnTrip.value) {
-                Get.back();
-              } else {
-                Get.back();
-              }
+              controller.onBackPressed();
             }),
         centerTitle: true,
         title: Obx(() => Text(

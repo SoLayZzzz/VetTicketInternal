@@ -3,6 +3,8 @@ import 'package:get/get.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import 'package:vet_internal_ticket/app_route.dart';
 import 'package:vet_internal_ticket/components/appbar.dart';
+import 'package:vet_internal_ticket/components/text.dart';
+import 'package:vet_internal_ticket/utils/bottom_sheets/app_padding.dart';
 import 'package:vet_internal_ticket/utils/colors.dart';
 
 class CarHistoryDetailScreen extends StatelessWidget {
@@ -47,8 +49,12 @@ class CarHistoryDetailScreen extends StatelessWidget {
         ? args['seatNo'].toString()
         : '2A';
 
-    const String phone = '086986093';
-    const String payment = 'Cash';
+    final String phone = (args['phone']?.toString().isNotEmpty ?? false)
+        ? args['phone'].toString()
+        : '086986093';
+    final String payment = (args['payment']?.toString().isNotEmpty ?? false)
+        ? args['payment'].toString()
+        : 'Cash';
 
     return Scaffold(
       appBar: appBarDefault(
@@ -57,106 +63,119 @@ class CarHistoryDetailScreen extends StatelessWidget {
       ),
       backgroundColor: Colors.grey.shade100,
       body: ListView(
-        padding: const EdgeInsets.all(16),
         children: [
-          ClipRRect(
-            borderRadius: BorderRadius.circular(14),
-            child: AspectRatio(
-              aspectRatio: 16 / 10,
-              child: Container(
-                decoration: const BoxDecoration(
-                  image: DecorationImage(
-                    image: AssetImage('assets/images/img_buva_sea.png'),
-                    fit: BoxFit.cover,
-                  ),
-                ),
-                child: Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 12,
-                    vertical: 14,
-                  ),
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      colors: [
-                        Colors.black.withOpacity(0.15),
-                        Colors.black.withOpacity(0.45),
-                      ],
-                      begin: Alignment.topCenter,
-                      end: Alignment.bottomCenter,
-                    ),
-                  ),
-                  child: LayoutBuilder(
-                    builder: (context, constraints) {
-                      final qrSize =
-                          (constraints.maxHeight * 0.50).clamp(90.0, 120.0);
-                      return Center(
-                        child: FittedBox(
-                          fit: BoxFit.scaleDown,
-                          child: SizedBox(
-                            width: constraints.maxWidth,
-                            child: Column(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Container(
-                                  padding: const EdgeInsets.all(10),
-                                  decoration: BoxDecoration(
-                                    color: Colors.white,
-                                    borderRadius: BorderRadius.circular(10),
-                                  ),
-                                  child: QrImageView(
-                                    data: code,
-                                    size: qrSize,
-                                    backgroundColor: Colors.white,
-                                  ),
-                                ),
-                                const SizedBox(height: 8),
-                                Text(
-                                  route,
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
-                                  textAlign: TextAlign.center,
-                                  style: const TextStyle(
-                                    color: Colors.white,
-                                    fontWeight: FontWeight.w700,
-                                    fontSize: 18,
-                                  ),
-                                ),
-                                const SizedBox(height: 4),
-                                Text(
-                                  code,
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
-                                  textAlign: TextAlign.center,
-                                  style: const TextStyle(
-                                    color: Colors.white,
-                                    fontWeight: FontWeight.w700,
-                                    fontSize: 16,
-                                  ),
-                                ),
-                                const SizedBox(height: 4),
-                                Text(
-                                  dateTime,
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
-                                  textAlign: TextAlign.center,
-                                  style: const TextStyle(
-                                    color: Colors.white,
-                                    fontWeight: FontWeight.w600,
-                                    fontSize: 14,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-                      );
-                    },
-                  ),
-                ),
-              ),
+          _buildImage(code, route, dateTime),
+          const SizedBox(height: 14),
+          _buildCartDisplay(
+            vehicle: vehicle,
+            phone: phone,
+            payment: payment,
+            passengerName: passengerName,
+            gender: gender,
+            nationality: nationality,
+            seatNo: seatNo,
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildImage(String code, String route, String dateTime) {
+    return ClipRRect(
+      child: AspectRatio(
+        aspectRatio: 11 / 10,
+        child: Container(
+          decoration: const BoxDecoration(
+            image: DecorationImage(
+              image: AssetImage('assets/images/img_buva_sea.png'),
+              fit: BoxFit.fill,
             ),
           ),
-          const SizedBox(height: 14),
+          child: LayoutBuilder(
+            builder: (context, constraints) {
+              final qrSize = (constraints.maxHeight * 0.45).clamp(80.0, 110.0);
+
+              return Column(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  // QR Code Section
+                  Container(
+                    padding: const EdgeInsets.all(10),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        QrImageView(
+                          data: code,
+                          size: qrSize,
+                          backgroundColor: Colors.white,
+                        ),
+                        const TextSmall(
+                          text: '2A-ប្រុស',
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  // Text Overlay Section
+                  Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.symmetric(vertical: 8),
+                    decoration: BoxDecoration(
+                      color: Colors.black.withAlpha(220),
+                    ),
+                    child: Column(
+                      children: [
+                        Text(
+                          route,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          textAlign: TextAlign.center,
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 18,
+                          ),
+                        ),
+                        Text(
+                          code,
+                          style: const TextStyle(
+                              color: Colors.white70, fontSize: 14),
+                        ),
+                        Text(
+                          dateTime,
+                          style: const TextStyle(
+                              color: Colors.white70, fontSize: 12),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              );
+            },
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildCartDisplay({
+    required String vehicle,
+    required String phone,
+    required String payment,
+    required String passengerName,
+    required String gender,
+    required String nationality,
+    required String seatNo,
+  }) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: AppPadding.large),
+      child: Column(
+        children: [
           Container(
             padding: const EdgeInsets.all(14),
             decoration: BoxDecoration(
@@ -188,22 +207,23 @@ class CarHistoryDetailScreen extends StatelessWidget {
                 ),
                 const SizedBox(height: 10),
                 const _InfoRow(label: 'ថ្ងៃធ្វើដំណើរ', value: '2026-01-03'),
-                const _InfoRow(label: 'លេខទូរស័ព្ទ', value: phone),
-                const _InfoRow(label: 'ទូទាត់', value: payment),
+                _InfoRow(label: 'លេខទូរស័ព្ទ', value: phone),
+                _InfoRow(label: 'ទូទាត់', value: payment),
               ],
             ),
           ),
-          const SizedBox(height: 14),
-          const _StationCard(
-            title: 'ចំណតឡើង:',
-            name: 'Battambang Lok ta Dombong kronhoung',
-            time: '(07:30:00)',
-            address:
-                'National Road 5 , Romchek 4 village, Sangkat Rattanak, Battambang City , Battambang',
-            latitude: 11.568280,
-            longitude: 104.890670,
+          const Padding(
+            padding: EdgeInsets.symmetric(vertical: 14),
+            child: _StationCard(
+              title: 'ចំណតឡើង:',
+              name: 'Battambang Lok ta Dombong kronhoung',
+              time: '(07:30:00)',
+              address:
+                  'National Road 5 , Romchek 4 village, Sangkat Rattanak, Battambang City , Battambang',
+              latitude: 11.568280,
+              longitude: 104.890670,
+            ),
           ),
-          const SizedBox(height: 14),
           const _StationCard(
             title: 'ចំណតចុះ:',
             name: 'Phnom Penh (Cannon Rifle Roundabout Park)',
@@ -212,30 +232,31 @@ class CarHistoryDetailScreen extends StatelessWidget {
             latitude: 11.5703975,
             longitude: 104.8980857,
           ),
-          const SizedBox(height: 14),
-          Container(
-            padding: const EdgeInsets.all(14),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(12),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withOpacity(0.2),
-                  blurRadius: 2,
-                  offset: const Offset(0, 2),
-                ),
-              ],
-            ),
-            child: Column(
-              children: [
-                _InfoRow(label: 'ឈ្មោះ', value: passengerName),
-                _InfoRow(label: 'ភេទ', value: gender),
-                _InfoRow(label: 'សញ្ជាតិ', value: nationality),
-                _InfoRow(label: 'លេខកៅអី', value: seatNo),
-              ],
+          Padding(
+            padding: const EdgeInsets.symmetric(vertical: 14),
+            child: Container(
+              padding: const EdgeInsets.all(14),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(12),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.2),
+                    blurRadius: 2,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
+              ),
+              child: Column(
+                children: [
+                  _InfoRow(label: 'ឈ្មោះ', value: passengerName),
+                  _InfoRow(label: 'ភេទ', value: gender),
+                  _InfoRow(label: 'សញ្ជាតិ', value: nationality),
+                  _InfoRow(label: 'លេខកៅអី', value: seatNo),
+                ],
+              ),
             ),
           ),
-          const SizedBox(height: 14),
           Container(
             padding: const EdgeInsets.all(14),
             decoration: BoxDecoration(

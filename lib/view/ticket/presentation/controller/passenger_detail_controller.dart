@@ -3,7 +3,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:vet_internal_ticket/app_route.dart';
-import 'package:vet_internal_ticket/components/text.dart';
 import 'package:vet_internal_ticket/core/base/state_controller.dart';
 import 'package:vet_internal_ticket/theme/app_padding.dart';
 import 'package:vet_internal_ticket/utils/colors.dart';
@@ -44,7 +43,10 @@ class PassengerDetailController extends StateController<PasengerDetailState> {
     booking.debugPrint();
 
     if (booking.goScheduleId == null || booking.goDate == null) {
-      Get.snackbar("Error", "Booking data missing. Please restart booking.");
+      _notifyError(
+        title: "Error",
+        message: "Booking data missing. Please restart booking.",
+      );
       Get.back();
       return;
     }
@@ -86,6 +88,17 @@ class PassengerDetailController extends StateController<PasengerDetailState> {
 
   void onTapGender(String seatId, int genderValue) {
     uiState.value.passengerGenders[seatId] = genderValue;
+
+    if (uiState.value.showGenderError.value) {
+      final con = uiState.value;
+      final allSeats = [...con.selectedSeats, ...con.selectedSeatback];
+      final hasMissing = allSeats.any((seat) {
+        final id = seat['value'] ?? '';
+        final g = con.passengerGenders[id];
+        return g == null || g == 0;
+      });
+      con.showGenderError.value = hasMissing;
+    }
   }
 
   // Route back
@@ -203,20 +216,70 @@ class PassengerDetailController extends StateController<PasengerDetailState> {
 
     // Show error if any
     if (hasPhoneError || hasGenderError || hasNationalError) {
-      Get.snackbar(
-        'ព័ត៌មានមិនគ្រប់គ្រាន់',
-        'សូមបំពេញព័ត៌មានដែលបានសម្គាល់ *',
-        duration: const Duration(seconds: 2),
-        snackPosition: SnackPosition.TOP,
-        backgroundColor: Colors.red,
-        colorText: Colors.white,
-      );
       return;
     }
 
     // Proceed to submit
     con.buttonText.value = 'កំពុងដំណើរការ...';
     postBookingConfirm();
+  }
+
+  void _notifyError({required String title, required String message}) {
+    void showDialog() {
+      if (Get.isDialogOpen == true) {
+        Get.back();
+      }
+      Get.defaultDialog(
+        title: title,
+        middleText: message,
+        textConfirm: 'OK',
+        onConfirm: () {
+          Get.back();
+        },
+      );
+    }
+
+    void showSnack() {
+      Get.snackbar(
+        title,
+        message,
+        duration: const Duration(seconds: 2),
+        snackPosition: SnackPosition.TOP,
+        backgroundColor: Colors.red,
+        colorText: Colors.white,
+      );
+    }
+
+    try {
+      final overlayContext = Get.overlayContext;
+      final hasOverlay =
+          overlayContext != null && Overlay.maybeOf(overlayContext) != null;
+
+      if (hasOverlay) {
+        showSnack();
+        return;
+      }
+
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        try {
+          final ctx = Get.overlayContext;
+          final ready = ctx != null && Overlay.maybeOf(ctx) != null;
+          if (ready) {
+            showSnack();
+          } else {
+            showDialog();
+          }
+        } catch (_) {
+          showDialog();
+        }
+      });
+    } catch (_) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        try {
+          showDialog();
+        } catch (_) {}
+      });
+    }
   }
 
   Future<void> postBookingConfirm() async {
@@ -336,24 +399,9 @@ class PassengerDetailController extends StateController<PasengerDetailState> {
 
       if (status == 0) {
         // 🚫 Seats unavailable
-        Get.snackbar(
-          "",
-          "",
-          titleText: TextSmall(
-            text: "Error",
-            color: AppColors.redColor,
-            fontWeight: FontWeight.bold,
-          ),
-          messageText: TextSmall(
-            text: "Sorry, some seats you selected are not available.",
-            color: AppColors.redColor,
-          ),
-          borderWidth: 1,
-          borderColor: AppColors.redColor,
-          margin: EdgeInsets.symmetric(horizontal: 10, vertical: 70),
-          padding: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-          backgroundColor: AppColors.whiteColor,
-          duration: Duration(seconds: 2),
+        _notifyError(
+          title: "Error",
+          message: "Sorry, some seats you selected are not available.",
         );
       } else if (status == 1) {
         // ✅ Booking success

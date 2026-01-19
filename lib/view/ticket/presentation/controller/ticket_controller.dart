@@ -15,6 +15,18 @@ class TicketMenuController extends StateController<TicketState> {
   final TicketUsecase _useCase;
   TicketMenuController(this._useCase);
 
+  DateTime? _tryParseYmd(String value) {
+    try {
+      return DateTime.parse(value);
+    } catch (_) {
+      return null;
+    }
+  }
+
+  String _formatYmd(DateTime date) {
+    return "${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}";
+  }
+
   @override
   TicketState onInitUiState() => TicketState();
 
@@ -103,6 +115,7 @@ class TicketMenuController extends StateController<TicketState> {
       state?.selectedFromName = null;
       state?.selectedToId = null;
       state?.selectedToName = null;
+      state?.selectDateBack = "";
       state?.ticketsTo.clear();
       state?.futuretoSelect.value = null;
       state?.fromWidgetKeyId++;
@@ -153,14 +166,36 @@ class TicketMenuController extends StateController<TicketState> {
 
   void updateSelectedDate(String date) {
     uiState.update((state) {
-      state?.selectDate = date;
-      state?.showDateError = false;
+      if (state == null) return;
+      state.selectDate = date;
+      state.showDateError = false;
+
+      if (state.selectDateBack.isEmpty) return;
+      final go = _tryParseYmd(state.selectDate);
+      final back = _tryParseYmd(state.selectDateBack);
+      if (go == null) return;
+
+      if (back == null || !back.isAfter(go)) {
+        state.selectDateBack = _formatYmd(go.add(const Duration(days: 1)));
+        state.showDateBackError = false;
+      }
     });
   }
 
-  void updateSelectedReturnDate(String? date) {
+  void updateSelectedReturnDate(String date) {
     uiState.update((state) {
-      state?.selectDateBack = date;
+      if (state == null) return;
+      final go = _tryParseYmd(state.selectDate);
+      final back = _tryParseYmd(date);
+
+      if (go != null) {
+        state.selectDateBack = _formatYmd((back != null && back.isAfter(go))
+            ? back
+            : go.add(const Duration(days: 1)));
+      } else {
+        state.selectDateBack = date;
+      }
+      state.showDateBackError = false;
     });
   }
 
@@ -185,7 +220,7 @@ class TicketMenuController extends StateController<TicketState> {
         'toName': uiState.value.selectedToName!,
         'date': uiState.value.selectDate,
         'type': uiState.value.selectedType.value,
-        'dateback': uiState.value.selectDateBack ?? "",
+        'dateback': uiState.value.selectDateBack,
       },
     );
 

@@ -3,6 +3,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:vet_internal_ticket/app_route.dart';
+import 'package:vet_internal_ticket/booking_service.dart';
 import 'package:vet_internal_ticket/core/base/state_controller.dart';
 import 'package:vet_internal_ticket/utils/colors.dart';
 import 'package:vet_internal_ticket/view/ticket/data/model/request/schedule_body.dart';
@@ -47,6 +48,7 @@ class ScheduleController extends StateController<ScheduleState> {
 
       /// ✅ Swap names and date for return trip UI
       if (uiState.value.isReturnTrip.value) {
+        uiState.value.originalDate = uiState.value.selectDate.value;
         final tempFromName = uiState.value.fromName;
         final tempFromId = uiState.value.fromId;
 
@@ -168,6 +170,75 @@ class ScheduleController extends StateController<ScheduleState> {
     }
   }
 
+  Future<void> onBackPressed() async {
+    if (!uiState.value.isReturnTrip.value) {
+      Get.back();
+      return;
+    }
+
+    final booking = Get.find<BookingService>().bookingData;
+    final goScheduleId = booking.goScheduleId;
+    final goDate = booking.goDate ?? uiState.value.originalDate;
+    final backDate = uiState.value.selectDateBack.value;
+
+    if (goScheduleId == null || goScheduleId.isEmpty || goDate == null) {
+      Get.back();
+      return;
+    }
+
+    final double goSeatPriceValue =
+        double.tryParse(booking.goSeatPrice ?? '0.0') ?? 0.0;
+    final int markupValue = uiState.value.markup.value;
+    final double totalPrice = goSeatPriceValue + markupValue;
+
+    Get.delete<SeatController>();
+
+    final result = await Get.toNamed(AppRoutes.select_seat_screen, arguments: {
+      'date': goDate,
+      'dateback': backDate,
+      'id': goScheduleId,
+      'fromName': booking.goFromName ?? uiState.value.toName,
+      'toName': booking.goToName ?? uiState.value.fromName,
+      'fromId': booking.goFromId ?? uiState.value.toId,
+      'toId': booking.goToId ?? uiState.value.fromId,
+      'seatPrice': booking.goSeatPrice ?? '0',
+      'totalSeat': booking.totalSeat ?? '0',
+      'markup': uiState.value.markup,
+      'totalPrice': totalPrice,
+      'isReturnTrip': false.obs,
+      'type': uiState.value.selectType,
+      'selectedSeats': booking.goSelectedSeats,
+      'selectedSeatback': booking.returnSelectedSeats,
+    });
+
+    if (result == 'go_confirmed') {
+      uiState.value.isReturnTrip.value = true;
+      await fetchScheduleList();
+      return;
+    }
+
+    uiState.value.isReturnTrip.value = false;
+    if (booking.goFromId != null && booking.goToId != null) {
+      uiState.value.fromId = booking.goFromId;
+      uiState.value.toId = booking.goToId;
+      uiState.value.fromName = booking.goFromName;
+      uiState.value.toName = booking.goToName;
+    } else {
+      final tempFromName = uiState.value.fromName;
+      final tempFromId = uiState.value.fromId;
+      uiState.value.fromName = uiState.value.toName;
+      uiState.value.toName = tempFromName;
+      uiState.value.fromId = uiState.value.toId;
+      uiState.value.toId = tempFromId;
+    }
+
+    if (goDate.isNotEmpty) {
+      uiState.value.selectDate.value = goDate;
+    }
+
+    await fetchScheduleList();
+  }
+
   void incrementMarkup() {
     if (uiState.value.markup.value < 5) {
       uiState.value.markup.value++;
@@ -220,9 +291,10 @@ class ScheduleController extends StateController<ScheduleState> {
 
     // Earliest selectable date:
     // - For GO: today
-    // - For RETURN: must be >= GO date
-    final first =
-        uiState.value.isReturnTrip.value ? parseGoDate() : DateTime.now();
+    // - For RETURN: must be > GO date
+    final first = uiState.value.isReturnTrip.value
+        ? parseGoDate().add(const Duration(days: 1))
+        : DateTime.now();
 
     final DateTime? pickedDate = await showDatePicker(
       context: context,
@@ -253,15 +325,36 @@ class ScheduleController extends StateController<ScheduleState> {
 
   void updateGoDate(DateTime newDate) {
     final formatted = _formatDate(newDate);
+    final hadReturnDate = uiState.value.selectDateBack.value.isNotEmpty;
     uiState.value.selectDate.value = formatted;
 
-    try {
-      final ret = DateTime.parse(uiState.value.selectDateBack.value);
-      if (ret.isBefore(newDate)) {
-        uiState.value.selectDateBack.value = formatted;
+    final booking = Get.find<BookingService>().bookingData;
+    booking.goScheduleId = null;
+    booking.goDate = formatted;
+    booking.goSeatPrice = null;
+    booking.goSelectedSeats.clear();
+
+    if (hadReturnDate) {
+      // Round-trip: keep return date but make sure it is > go date
+      try {
+        final ret = DateTime.parse(uiState.value.selectDateBack.value);
+        if (!ret.isAfter(newDate)) {
+          uiState.value.selectDateBack.value =
+              _formatDate(newDate.add(const Duration(days: 1)));
+        }
+      } catch (_) {
+        uiState.value.selectDateBack.value =
+            _formatDate(newDate.add(const Duration(days: 1)));
       }
-    } catch (_) {
-      uiState.value.selectDateBack.value = formatted;
+
+      booking.returnScheduleId = null;
+      booking.returnSeatPrice = null;
+      booking.returnSelectedSeats.clear();
+      booking.returnDate = uiState.value.selectDateBack.value;
+    } else {
+      // One-way: ensure we don't accidentally create a return date
+      uiState.value.selectDateBack.value = "";
+      booking.resetReturnSelection();
     }
 
     fetchScheduleList();
@@ -269,8 +362,18 @@ class ScheduleController extends StateController<ScheduleState> {
 
   void updateReturnDate(DateTime newDate) {
     final go = parseGoDate();
-    final safe = newDate.isBefore(go) ? go : newDate;
-    uiState.value.selectDateBack.value = _formatDate(safe);
+    final safe =
+        newDate.isAfter(go) ? newDate : go.add(const Duration(days: 1));
+
+    final formatted = _formatDate(safe);
+    uiState.value.selectDateBack.value = formatted;
+
+    final booking = Get.find<BookingService>().bookingData;
+    booking.returnScheduleId = null;
+    booking.returnDate = formatted;
+    booking.returnSeatPrice = null;
+    booking.returnSelectedSeats.clear();
+
     fetchScheduleList();
   }
 

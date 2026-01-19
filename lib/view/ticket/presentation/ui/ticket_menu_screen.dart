@@ -232,7 +232,7 @@ class TicketMenuScreen extends GetView<TicketMenuController> {
                 showCurrentDateAuto: false,
                 allowPastDates: false,
                 text: "ថ្ងៃមកវិញ",
-                minDate: goDate,
+                minDate: goDate?.add(const Duration(days: 1)),
                 backgroundColor: AppColors.whiteColor,
                 selectedDateColor: AppColors.primaryColor,
                 onSeclectDate: (formattedDate) {

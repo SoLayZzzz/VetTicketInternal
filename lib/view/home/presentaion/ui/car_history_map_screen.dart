@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:flutter_map/flutter_map.dart';
-import 'package:latlong2/latlong.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:vet_internal_ticket/components/appbar.dart';
 
 class CarHistoryMapScreen extends StatefulWidget {
@@ -14,10 +13,11 @@ class CarHistoryMapScreen extends StatefulWidget {
 class _CarHistoryMapScreenState extends State<CarHistoryMapScreen> {
   static const LatLng _defaultPosition = LatLng(11.5449, 104.8922);
 
-  final MapController _mapController = MapController();
+  GoogleMapController? _googleMapController;
 
   late final LatLng _targetPosition;
   // late final String _label;
+  static const double _initialZoom = 13.5;
 
   @override
   void initState() {
@@ -39,12 +39,17 @@ class _CarHistoryMapScreenState extends State<CarHistoryMapScreen> {
 
   @override
   void dispose() {
+    _googleMapController?.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    const initialZoom = 13.5;
+    final marker = Marker(
+      markerId: const MarkerId('target'),
+      position: _targetPosition,
+      icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueRed),
+    );
 
     return Scaffold(
       appBar: appBarDefault(
@@ -54,38 +59,20 @@ class _CarHistoryMapScreenState extends State<CarHistoryMapScreen> {
       body: Stack(
         children: [
           Positioned.fill(
-            child: FlutterMap(
-              mapController: _mapController,
-              options: MapOptions(
-                initialCenter: _targetPosition,
-                initialZoom: initialZoom,
-                interactionOptions: const InteractionOptions(
-                  flags: InteractiveFlag.pinchZoom |
-                      InteractiveFlag.doubleTapZoom |
-                      InteractiveFlag.drag |
-                      InteractiveFlag.flingAnimation,
-                ),
+            child: GoogleMap(
+              initialCameraPosition: CameraPosition(
+                target: _targetPosition,
+                zoom: _initialZoom,
               ),
-              children: [
-                TileLayer(
-                  urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
-                  userAgentPackageName: 'vet_internal_ticket',
-                ),
-                MarkerLayer(
-                  markers: [
-                    Marker(
-                      point: _targetPosition,
-                      width: 44,
-                      height: 44,
-                      child: const Icon(
-                        Icons.location_pin,
-                        color: Colors.red,
-                        size: 44,
-                      ),
-                    ),
-                  ],
-                ),
-              ],
+              onMapCreated: (controller) {
+                _googleMapController = controller;
+              },
+              markers: {marker},
+              myLocationButtonEnabled: false,
+              zoomControlsEnabled: false,
+              compassEnabled: true,
+              mapToolbarEnabled: false,
+              buildingsEnabled: true,
             ),
           ),
           Positioned(
@@ -98,8 +85,9 @@ class _CarHistoryMapScreenState extends State<CarHistoryMapScreen> {
                   heroTag: 'map-zoom-in',
                   mini: true,
                   onPressed: () {
-                    final camera = _mapController.camera;
-                    _mapController.move(camera.center, camera.zoom + 1);
+                    _googleMapController?.animateCamera(
+                      CameraUpdate.zoomIn(),
+                    );
                   },
                   child: const Icon(Icons.add),
                 ),
@@ -108,8 +96,9 @@ class _CarHistoryMapScreenState extends State<CarHistoryMapScreen> {
                   heroTag: 'map-zoom-out',
                   mini: true,
                   onPressed: () {
-                    final camera = _mapController.camera;
-                    _mapController.move(camera.center, camera.zoom - 1);
+                    _googleMapController?.animateCamera(
+                      CameraUpdate.zoomOut(),
+                    );
                   },
                   child: const Icon(Icons.remove),
                 ),

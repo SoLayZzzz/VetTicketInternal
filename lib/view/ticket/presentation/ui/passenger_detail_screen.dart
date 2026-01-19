@@ -362,6 +362,19 @@ class PassengerDetailScreen extends GetView<PassengerDetailController> {
               ),
             );
           }),
+          Obx(() {
+            final state = controller.uiState.value;
+            final hasError =
+                state.hasSubmitted.value && state.showPhoneError.value;
+            if (!hasError) return const SizedBox.shrink();
+            return const Padding(
+              padding: EdgeInsets.only(top: 6),
+              child: Text(
+                '* សូមបំពេញលេខទូរស័ព្ទ',
+                style: TextStyle(color: Colors.red, fontSize: 12),
+              ),
+            );
+          }),
         ],
       ),
     );
@@ -431,99 +444,120 @@ class PassengerDetailScreen extends GetView<PassengerDetailController> {
   /// Reusable list of passengers (gender selection per seat).
   Widget _buildDataListCustomer(List<Map<String, String>> seats) => Padding(
         padding: const EdgeInsets.symmetric(horizontal: AppPadding.large),
-        child: ListView.builder(
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            itemCount: seats.length,
-            itemBuilder: (context, index) {
-              final seatNumber = seats[index];
-              final seatLabel = seatNumber['label'] ?? seatNumber['value'];
-              final seatId = seatNumber['value'] ?? index.toString();
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Obx(() {
+              final state = controller.uiState.value;
+              final show =
+                  state.hasSubmitted.value && state.showGenderError.value;
+              if (!show) return const SizedBox.shrink();
+              return const Padding(
+                padding: EdgeInsets.only(bottom: 6),
+                child: Text(
+                  '* សូមជ្រើសរើសភេទ',
+                  style: TextStyle(color: Colors.red, fontSize: 12),
+                ),
+              );
+            }),
+            ListView.builder(
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                itemCount: seats.length,
+                itemBuilder: (context, index) {
+                  final seatNumber = seats[index];
+                  final seatLabel = seatNumber['label'] ?? seatNumber['value'];
+                  final seatId = seatNumber['value'] ?? index.toString();
 
-              return Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.only(top: 10),
-                    child: Text.rich(
-                      TextSpan(
-                        children: [
-                          const TextSpan(text: 'លេខកៅអី '),
-                          TextSpan(
-                              text: seatLabel,
-                              style:
-                                  const TextStyle(color: AppColors.redColor)),
-                        ],
-                      ),
-                    ),
-                  ),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  return Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Text.rich(
-                        TextSpan(
-                          children: [
-                            TextSpan(text: 'ភេទ '),
-                            TextSpan(
-                                text: '*',
-                                style: TextStyle(color: AppColors.redColor)),
-                          ],
+                      Padding(
+                        padding: const EdgeInsets.only(top: 10),
+                        child: Text.rich(
+                          TextSpan(
+                            children: [
+                              const TextSpan(text: 'លេខកៅអី '),
+                              TextSpan(
+                                  text: seatLabel,
+                                  style: const TextStyle(
+                                      color: AppColors.redColor)),
+                            ],
+                          ),
                         ),
                       ),
-                      Obx(() {
-                        final hasEmpty =
-                            controller.uiState.value.showGenderError.value &&
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          const Text.rich(
+                            TextSpan(
+                              children: [
+                                TextSpan(text: 'ភេទ '),
+                                TextSpan(
+                                    text: '*',
+                                    style:
+                                        TextStyle(color: AppColors.redColor)),
+                              ],
+                            ),
+                          ),
+                          Obx(() {
+                            final hasEmpty = controller
+                                    .uiState.value.showGenderError.value &&
                                 (controller.uiState.value
                                             .passengerGenders[seatId] ==
                                         null ||
                                     controller.uiState.value
                                             .passengerGenders[seatId] ==
                                         0);
-                        return Row(
-                          children: [
-                            GenderSelectOption(
-                              borderColor:
-                                  hasEmpty ? Colors.red : Colors.black26,
-                              assetImage: const AssetImage(AppIcons.IC_female),
-                              value: controller.uiState.value.female.value,
-                              groupValue: controller
-                                      .uiState.value.passengerGenders[seatId] ??
-                                  0,
-                              label: "ស្រី",
-                              onTap: () => controller.onTapGender(seatId,
-                                  controller.uiState.value.female.value),
-                            ),
-                            const SizedBox(width: 20),
-                            GenderSelectOption(
-                              borderColor:
-                                  hasEmpty ? Colors.red : Colors.black26,
-                              assetImage: const AssetImage(AppIcons.IC_male),
-                              value: controller.uiState.value.male.value,
-                              groupValue: controller
-                                      .uiState.value.passengerGenders[seatId] ??
-                                  0,
-                              label: "ប្រុស",
-                              onTap: () => controller.onTapGender(
-                                  seatId, controller.uiState.value.male.value),
-                            ),
-                          ],
-                        );
-                      }),
-                    ],
-                  ),
-                  if (seats.length > 1 && index != seats.length - 1)
-                    const Padding(
-                      padding: EdgeInsets.only(top: 15),
-                      child: ContainerComponent(
-                        height: 2,
-                        width: double.infinity,
-                        color: Colors.white,
-                        assetImage: AssetImage(AppImages.IM_line),
+                            return Row(
+                              children: [
+                                GenderSelectOption(
+                                  borderColor:
+                                      hasEmpty ? Colors.red : Colors.black26,
+                                  assetImage:
+                                      const AssetImage(AppIcons.IC_female),
+                                  value: controller.uiState.value.female.value,
+                                  groupValue: controller.uiState.value
+                                          .passengerGenders[seatId] ??
+                                      0,
+                                  label: "ស្រី",
+                                  onTap: () => controller.onTapGender(seatId,
+                                      controller.uiState.value.female.value),
+                                ),
+                                const SizedBox(width: 20),
+                                GenderSelectOption(
+                                  borderColor:
+                                      hasEmpty ? Colors.red : Colors.black26,
+                                  assetImage:
+                                      const AssetImage(AppIcons.IC_male),
+                                  value: controller.uiState.value.male.value,
+                                  groupValue: controller.uiState.value
+                                          .passengerGenders[seatId] ??
+                                      0,
+                                  label: "ប្រុស",
+                                  onTap: () => controller.onTapGender(seatId,
+                                      controller.uiState.value.male.value),
+                                ),
+                              ],
+                            );
+                          }),
+                        ],
                       ),
-                    ),
-                ],
-              );
-            }),
+                      if (seats.length > 1 && index != seats.length - 1)
+                        const Padding(
+                          padding: EdgeInsets.only(top: 15),
+                          child: ContainerComponent(
+                            height: 2,
+                            width: double.infinity,
+                            color: Colors.white,
+                            assetImage: AssetImage(AppImages.IM_line),
+                          ),
+                        ),
+                    ],
+                  );
+                }),
+          ],
+        ),
       );
 
   /// --- BOTTOM NAVIGATION --- ///

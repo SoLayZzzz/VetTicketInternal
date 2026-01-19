@@ -47,7 +47,9 @@ class TicketState {
   // Date
   // String? selectDate;
   String selectDate = "";
-  String? selectDateBack;
+  String selectDateBack = "";
+
+  bool showDateBackError = false;
 
   // Error State
   bool showFromError = false;
@@ -58,8 +60,26 @@ class TicketState {
   bool validate() {
     showFromError = selectedFromId == null;
     showToError = selectedToId == null;
-    showDateError = selectDate == null;
+    showDateError = selectDate.isEmpty;
 
-    return !showFromError && !showToError && !showDateError;
+    final isRoundTrip = selectDateBack.isNotEmpty;
+    showDateBackError = false;
+
+    if (!showFromError && !showToError && !showDateError && isRoundTrip) {
+      try {
+        final go = DateTime.parse(selectDate);
+        final back = DateTime.parse(selectDateBack);
+        if (!back.isAfter(go)) {
+          showDateBackError = true;
+        }
+      } catch (_) {
+        showDateBackError = true;
+      }
+    }
+
+    return !showFromError &&
+        !showToError &&
+        !showDateError &&
+        !showDateBackError;
   }
 }
