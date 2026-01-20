@@ -1,8 +1,10 @@
+// ignore_for_file: constant_identifier_names
+
 class AppIcons {
   static const IC_Ticket = "assets/icons/ic_ticket.png";
   static const IC_statistics = "assets/icons/ic_statistics.png";
   static const IC_bus = "assets/icons/ic_bus.png";
-  static const IC_menu_drawer = "assets/icons/ic_menu_drawer.png";
+  static const IC_menu_drawer = "assets/icons/ic_drawer.png";
   static const IC_ticket_scanner = "assets/icons/ic_ticket_scanner.png";
   static const IC_calender = "assets/icons/ic_calendar.png";
   static const IC_location = "assets/icons/ic_location.png";

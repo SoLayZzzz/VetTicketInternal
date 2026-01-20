@@ -1,4 +1,4 @@
-// ignore_for_file: prefer_const_literals_to_create_immutables, avoid_print
+// ignore_for_file: prefer_const_literals_to_create_immutables, avoid_print, prefer_const_constructors
 
 import 'dart:convert';
 import 'dart:async';
@@ -24,7 +24,7 @@ import 'package:vet_internal_ticket/app_route.dart';
 import 'package:vet_internal_ticket/components/text.dart';
 import 'package:vet_internal_ticket/services/bluetooth_service.dart';
 import 'package:vet_internal_ticket/theme/app_padding.dart';
-import 'package:vet_internal_ticket/utils/colors.dart';
+import 'package:vet_internal_ticket/theme/app_colors.dart';
 import 'package:vet_internal_ticket/utils/dimension.dart';
 import 'package:vet_internal_ticket/view/booking/presentation/controller/booking_controller.dart';
 import 'package:widgets_to_image/widgets_to_image.dart';
@@ -269,25 +269,26 @@ class _TransactionScreenState extends State<TransactionScreen>
         borderRadius: 5,
         margin: const EdgeInsets.symmetric(vertical: 70, horizontal: 10),
         padding: EdgeInsets.zero,
-        boxShadows: const [
+        boxShadows: [
           BoxShadow(
-            color: Colors.grey,
-            offset: Offset(2, 2),
-            blurRadius: 5,
+            color: Colors.black.withAlpha(100),
+            offset: const Offset(1, 1),
+            spreadRadius: 2,
+            blurRadius: 2,
           )
         ],
-        titleText: Padding(
-          padding: const EdgeInsets.only(top: 30),
+        titleText: const Padding(
+          padding: EdgeInsets.only(top: 30),
           child: Row(
             children: [
-              const Padding(
+              Padding(
                 padding: EdgeInsets.only(left: 10),
                 child: Icon(
                   Icons.warning_amber_outlined,
                   color: Colors.red,
                 ),
               ),
-              const Padding(
+              Padding(
                 padding: EdgeInsets.only(left: 20),
                 child: TextExtraMedium(
                   text: "Printer:",
@@ -296,8 +297,7 @@ class _TransactionScreenState extends State<TransactionScreen>
                 ),
               ),
               Padding(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: AppPadding.small),
+                padding: EdgeInsets.symmetric(horizontal: AppPadding.small),
                 child: TextExtraMedium(
                   text: "មិនទាន់ភ្ជាប់ម៉ាស៊ីនព្រីន",
                   color: Colors.redAccent,
@@ -391,17 +391,16 @@ class _TransactionScreenState extends State<TransactionScreen>
       Uint8List? bytes = await printer.printer.capture();
 
       if (bytes == null) throw Exception("Failed to capture seat ");
-     // await _showCapturedImageDialog(bytes, 'Unknown');
+      // await _showCapturedImageDialog(bytes, 'Unknown');
 
       printer.startPrint(bytes);
-
-
     } catch (e) {
       print('Print sequence error: $e');
     }
   }
 
-  Future<void> _showCapturedImageDialog(Uint8List image, String ticketCode) async {
+  Future<void> _showCapturedImageDialog(
+      Uint8List image, String ticketCode) async {
     await Get.dialog(
       AlertDialog(
         title: Text('Captured Ticket: $ticketCode'),
@@ -427,7 +426,6 @@ class _TransactionScreenState extends State<TransactionScreen>
       ),
     );
   }
-
 
   /// ✅ Share PDF (Telegram, etc.)
 
@@ -477,7 +475,6 @@ class _TransactionScreenState extends State<TransactionScreen>
 
   @override
   Widget build(BuildContext context) {
-
     final printer = Get.find<PrinterSettingController>();
 
     return Scaffold(
@@ -508,28 +505,24 @@ class _TransactionScreenState extends State<TransactionScreen>
         ),
         body: SingleChildScrollView(
           child: RepaintBoundary(
-            key: _printKey,
-            child: WidgetsToImage(
-              child: Container(
-                color: AppColors.primaryPurple,
-                child: Obx(() => Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisAlignment: MainAxisAlignment.start,
-                  children: [
-                    _transactioGo(),
-                    SizedBox(
-                      height: 20,
-                    ),
-                    _trasactionback()
-                  ],
-                )),
-              ),
-              controller: printer.printer,
-
-            )
-
-
-          ),
+              key: _printKey,
+              child: WidgetsToImage(
+                controller: printer.printer,
+                child: Container(
+                  color: AppColors.primaryPurple,
+                  child: Obx(() => Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisAlignment: MainAxisAlignment.start,
+                        children: [
+                          _transactioGo(),
+                          SizedBox(
+                            height: 20,
+                          ),
+                          _trasactionback()
+                        ],
+                      )),
+                ),
+              )),
         ),
         bottomNavigationBar: _buttonBottomBar());
   }
@@ -594,10 +587,8 @@ class _TransactionScreenState extends State<TransactionScreen>
                     borderRadius: BorderRadius.circular(5),
                     color: AppColors.primaryColor,
                     onTap: () async {
-
-                        await _printReceiptThenSeat();
-                       // Get.offAllNamed(AppRoutes.homeScreen);
-
+                      await _printReceiptThenSeat();
+                      // Get.offAllNamed(AppRoutes.homeScreen);
                     },
                     child:
                         TextSmall(text: "ព្រីន", color: AppColors.whiteColor),
@@ -655,10 +646,6 @@ class _TransactionScreenState extends State<TransactionScreen>
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // _buildTitle(ticket),
-          // _buildTable(ticket),
-          // _buildTableTwo(ticket),
-          // _buildDetail(ticket),
           _buildRecip(ticket),
           _buildQRSeat(ticket),
         ],

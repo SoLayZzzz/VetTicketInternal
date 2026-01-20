@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:vet_internal_ticket/app_route.dart';
 import 'package:vet_internal_ticket/utils/bottom_sheets/text.dart';
-import 'package:vet_internal_ticket/utils/colors.dart';
+import 'package:vet_internal_ticket/theme/app_colors.dart';
 
 class ScheduleList extends StatefulWidget {
   const ScheduleList({
@@ -50,6 +50,10 @@ class _ScheduleListState extends State<ScheduleList> {
       width: double.infinity,
       decoration: BoxDecoration(
         color: Colors.white,
+        border: Border.all(
+          width: 1,
+          color: AppColors.grey,
+        ),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withOpacity(0.2),
@@ -74,9 +78,15 @@ class _ScheduleListState extends State<ScheduleList> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text18(text: widget.startTime, fontWeight: FontWeight.w500),
-                Image(image: widget.assetImage!),
+                Image(
+                  image: widget.assetImage!,
+                  color: Colors.black,
+                ),
                 Text18(text: widget.middleTime, fontWeight: FontWeight.w500),
-                Image(image: widget.assetImage!),
+                Image(
+                  image: widget.assetImage!,
+                  color: Colors.black,
+                ),
                 Text18(text: widget.endTime, fontWeight: FontWeight.w500),
               ],
             ),
@@ -176,7 +186,10 @@ class _ScheduleListState extends State<ScheduleList> {
             ),
             //
             const SizedBox(height: 10),
-            const Divider(height: 1),
+            Divider(
+              height: 1,
+              color: Colors.black.withAlpha(100),
+            ),
             const SizedBox(height: 10),
             Row(
               children: [

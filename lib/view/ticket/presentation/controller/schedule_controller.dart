@@ -5,7 +5,7 @@ import 'package:get/get.dart';
 import 'package:vet_internal_ticket/app_route.dart';
 import 'package:vet_internal_ticket/booking_service.dart';
 import 'package:vet_internal_ticket/core/base/state_controller.dart';
-import 'package:vet_internal_ticket/utils/colors.dart';
+import 'package:vet_internal_ticket/theme/app_colors.dart';
 import 'package:vet_internal_ticket/view/ticket/data/model/request/schedule_body.dart';
 import 'package:vet_internal_ticket/view/ticket/domain/uscase/schedule_uscase.dart';
 import 'package:vet_internal_ticket/view/ticket/presentation/controller/seat_controller.dart';

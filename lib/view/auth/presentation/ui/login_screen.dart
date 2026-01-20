@@ -1,11 +1,10 @@
-
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:vet_internal_ticket/app_icons.dart';
 import 'package:vet_internal_ticket/app_image.dart';
 import 'package:vet_internal_ticket/components/text.dart';
 import 'package:vet_internal_ticket/theme/app_padding.dart';
-import 'package:vet_internal_ticket/utils/colors.dart';
+import 'package:vet_internal_ticket/theme/app_colors.dart';
 import 'package:vet_internal_ticket/view/auth/presentation/controller/auth_controller.dart';
 import '../../../../utils/bottom_sheets/button.dart';
 import '../../../../utils/global.dart';

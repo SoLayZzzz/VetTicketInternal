@@ -1,6 +1,5 @@
 // ignore_for_file: unnecessary_null_comparison
 
-
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
@@ -8,7 +7,7 @@ import 'package:vet_internal_ticket/components/appbar.dart';
 import 'package:vet_internal_ticket/components/container_component.dart';
 import 'package:vet_internal_ticket/components/text.dart';
 import 'package:vet_internal_ticket/theme/app_padding.dart';
-import 'package:vet_internal_ticket/utils/colors.dart';
+import 'package:vet_internal_ticket/theme/app_colors.dart';
 import 'package:vet_internal_ticket/view/car_scan/presentation/controller/scan_ticket_controller.dart';
 import 'package:vet_internal_ticket/view/car_scan/presentation/ui/other/custom_painters.dart';
 

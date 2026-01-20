@@ -4,10 +4,10 @@ import 'package:vet_internal_ticket/app_icons.dart';
 import 'package:vet_internal_ticket/app_route.dart';
 import 'package:vet_internal_ticket/components/text.dart';
 import 'package:vet_internal_ticket/theme/app_padding.dart';
-import 'package:vet_internal_ticket/utils/colors.dart';
+import 'package:vet_internal_ticket/theme/app_colors.dart';
+import 'package:vet_internal_ticket/utils/dimension.dart';
 import 'package:vet_internal_ticket/view/home/presentaion/controller/home_controller.dart';
 import '../../../../components/appbar.dart';
-import '../../../../utils/dimension.dart';
 import 'widget/card_item.dart';
 import 'widget/drawer_menu.dart';
 
@@ -27,7 +27,11 @@ class HomeScreen extends GetView<HomeController> {
             horizontal: AppPadding.extraLarge, vertical: AppPadding.bigger),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
-          children: [_buildTitle(context), _buildGird(context)],
+          children: [
+            _buildTitle(context),
+            const SizedBox(height: AppPadding.medium),
+            _buildGird(context),
+          ],
         ),
       ),
     );
@@ -36,7 +40,6 @@ class HomeScreen extends GetView<HomeController> {
   _buildAppBar() {
     return appBarHome(
       title: "VET Ticket Internal",
-      center: false,
       leadingIcon: IconButton(
         icon: Image.asset(
           AppIcons.IC_menu_drawer,

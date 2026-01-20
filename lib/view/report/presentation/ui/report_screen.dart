@@ -4,7 +4,7 @@ import 'package:vet_internal_ticket/app_route.dart';
 import 'package:vet_internal_ticket/components/container_component.dart';
 import 'package:vet_internal_ticket/theme/app_padding.dart';
 import '../../../../components/appbar.dart';
-import '../../../../utils/colors.dart';
+import '../../../../theme/app_colors.dart';
 import '../../../../utils/dimension.dart';
 import '../../../../utils/style.dart';
 

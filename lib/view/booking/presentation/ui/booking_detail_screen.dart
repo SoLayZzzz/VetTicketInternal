@@ -4,7 +4,7 @@ import 'package:vet_internal_ticket/app_image.dart';
 import 'package:vet_internal_ticket/app_route.dart';
 import 'package:vet_internal_ticket/components/text.dart';
 import 'package:vet_internal_ticket/theme/app_padding.dart';
-import 'package:vet_internal_ticket/utils/colors.dart';
+import 'package:vet_internal_ticket/theme/app_colors.dart';
 import 'package:vet_internal_ticket/view/booking/presentation/controller/booking_controller.dart';
 
 class BookingDetailScreen extends GetView<BookingController> {

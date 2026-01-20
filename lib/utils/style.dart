@@ -1,12 +1,13 @@
 import 'package:flutter/material.dart';
 
-import 'colors.dart';
+import '../theme/app_colors.dart';
 import 'dimension.dart';
 
 /// style app bar home
 const TextStyle styleNormal14White = TextStyle(
-    color: AppColors.whiteColor, fontSize: Dimension.fontSize14, fontWeight: FontWeight.w400);
-
+    color: AppColors.whiteColor,
+    fontSize: Dimension.fontSize14,
+    fontWeight: FontWeight.w400);
 
 /// font size 14
 const TextStyle styleNormal14 = TextStyle(
@@ -36,12 +37,15 @@ const TextStyle styleBold16 = TextStyle(
 
 /// style app bar
 const TextStyle styleAppBar = TextStyle(
-    color: AppColors.whiteColor, fontSize: Dimension.fontSize18, fontWeight: FontWeight.w600);
+    color: AppColors.whiteColor,
+    fontSize: Dimension.fontSize18,
+    fontWeight: FontWeight.w600);
 
 /// style app bar home
 const TextStyle styleAppBarHome = TextStyle(
-    color: AppColors.whiteColor, fontSize: Dimension.fontSize20, fontWeight: FontWeight.w600);
-
+    color: AppColors.whiteColor,
+    fontSize: Dimension.fontSize20,
+    fontWeight: FontWeight.w600);
 
 ///text field
 OutlineInputBorder outlineInputBorder() {

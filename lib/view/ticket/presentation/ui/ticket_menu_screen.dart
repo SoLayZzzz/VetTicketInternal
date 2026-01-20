@@ -14,7 +14,7 @@ import 'package:vet_internal_ticket/view/ticket/presentation/widget/container_bu
 import '../../../../utils/bottom_sheets/button.dart';
 import '../../../../utils/bottom_sheets/select_date.dart';
 import '../../../../utils/bottom_sheets/select_location.dart';
-import '../../../../utils/colors.dart';
+import '../../../../theme/app_colors.dart';
 
 class TicketMenuScreen extends GetView<TicketMenuController> {
   const TicketMenuScreen({super.key});
@@ -28,21 +28,23 @@ class TicketMenuScreen extends GetView<TicketMenuController> {
           Get.back();
         },
       ),
-      body: Padding(
-        padding: const EdgeInsets.symmetric(
-            horizontal: AppPadding.medium, vertical: AppPadding.extraMedium),
-        child: Column(
-          children: [
-            _buildSelectTab(),
-            Obx(
-              () => _buildSelectDestinationFrom(),
-            ),
-            _buildSelectDestinationTo(),
-            _buildSelectDate(),
+      body: SafeArea(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.symmetric(
+              horizontal: AppPadding.medium, vertical: AppPadding.extraMedium),
+          child: Column(
+            children: [
+              _buildSelectTab(),
+              Obx(
+                () => _buildSelectDestinationFrom(),
+              ),
+              _buildSelectDestinationTo(),
+              _buildSelectDate(),
 
-            // button search
-            _buildSearch(),
-          ],
+              // button search
+              _buildSearch(),
+            ],
+          ),
         ),
       ),
     );
@@ -107,8 +109,8 @@ class TicketMenuScreen extends GetView<TicketMenuController> {
             assetImage: const AssetImage(AppIcons.IC_navigation),
             showChooseScreen: true,
             borderRadius: BorderRadius.circular(5),
-            borderColor: AppColors.borderColor,
-            textStyle: const TextStyle(color: AppColors.textColor),
+            borderColor: Colors.black,
+            textStyle: const TextStyle(color: Colors.black),
             // Error if don't inut data
             hasError: controller.uiState.value.showFromError,
             errorText: controller.uiState.value.showFromError
@@ -172,10 +174,8 @@ class TicketMenuScreen extends GetView<TicketMenuController> {
             assetImage: const AssetImage(AppIcons.IC_location),
             showChooseScreen: true,
             borderRadius: BorderRadius.circular(5),
-            borderColor: AppColors.borderColor,
-            textStyle: TextStyle(
-              color: hasData ? AppColors.textColor : Colors.grey,
-            ),
+            borderColor: Colors.black,
+            textStyle: const TextStyle(color: Colors.black),
             // Error if don't inut data
             hasError: controller.uiState.value.showToError,
             errorText: controller.uiState.value.showToError
@@ -198,48 +198,54 @@ class TicketMenuScreen extends GetView<TicketMenuController> {
   Widget _buildSelectDate() => Padding(
         padding: EdgeInsets.symmetric(vertical: Dimension.padding20),
         child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            // Go Date Picker
-            DatePicker(
-              width: Get.width / 2.2,
-              assetImage: AssetImage(AppIcons.IC_calender),
-              clearable: false,
-              showCurrentDateAuto: true,
-              allowPastDates: false,
-              backgroundColor: AppColors.whiteColor,
-              selectedDateColor: AppColors.primaryColor,
-              fontSize: 13,
-              onSeclectDate: (formattedDate) {
-                controller.updateSelectedDate(formattedDate);
-              },
-            ),
-
-            // Return Date Picker
-            Obx(() {
-              DateTime? goDate;
-              try {
-                final parts = controller.uiState.value.selectDate.split('-');
-                if (parts.length == 3) {
-                  goDate = DateTime.parse(controller.uiState.value.selectDate);
-                }
-              } catch (_) {}
-
-              return DatePicker(
-                width: Get.width / 2.2,
+            Expanded(
+              child: DatePicker(
+                width: double.infinity,
                 assetImage: AssetImage(AppIcons.IC_calender),
-                fontSize: 13,
-                showCurrentDateAuto: false,
+                clearable: false,
+                borderWidth: 1,
+                borderColor: Colors.black.withAlpha(400),
+                showCurrentDateAuto: true,
                 allowPastDates: false,
-                text: "ថ្ងៃមកវិញ",
-                minDate: goDate?.add(const Duration(days: 1)),
                 backgroundColor: AppColors.whiteColor,
                 selectedDateColor: AppColors.primaryColor,
+                fontSize: 13,
                 onSeclectDate: (formattedDate) {
-                  controller.updateSelectedReturnDate(formattedDate);
+                  controller.updateSelectedDate(formattedDate);
                 },
-              );
-            })
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Obx(() {
+                DateTime? goDate;
+                try {
+                  final parts = controller.uiState.value.selectDate.split('-');
+                  if (parts.length == 3) {
+                    goDate =
+                        DateTime.parse(controller.uiState.value.selectDate);
+                  }
+                } catch (_) {}
+
+                return DatePicker(
+                  width: double.infinity,
+                  assetImage: AssetImage(AppIcons.IC_calender),
+                  fontSize: 13,
+                  showCurrentDateAuto: false,
+                  allowPastDates: false,
+                  borderWidth: 1,
+                  borderColor: Colors.black.withAlpha(400),
+                  text: "ថ្ងៃមកវិញ",
+                  minDate: goDate?.add(const Duration(days: 1)),
+                  backgroundColor: AppColors.whiteColor,
+                  selectedDateColor: AppColors.primaryColor,
+                  onSeclectDate: (formattedDate) {
+                    controller.updateSelectedReturnDate(formattedDate);
+                  },
+                );
+              }),
+            ),
           ],
         ),
       );

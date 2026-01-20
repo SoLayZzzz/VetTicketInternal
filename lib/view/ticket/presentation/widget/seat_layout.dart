@@ -2,7 +2,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:vet_internal_ticket/app_icons.dart';
 import 'package:vet_internal_ticket/components/text.dart';
-import 'package:vet_internal_ticket/utils/colors.dart';
+import 'package:vet_internal_ticket/theme/app_colors.dart';
 
 class SeatLayoutSceduleWidget extends StatelessWidget {
   final String layoutJson;

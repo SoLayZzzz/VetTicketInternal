@@ -6,7 +6,7 @@ import 'package:vet_internal_ticket/view/report/presentation/controller/report_s
 
 import '../../../../components/appbar.dart';
 import '../../../../components/button.dart';
-import '../../../../utils/colors.dart';
+import '../../../../theme/app_colors.dart';
 import '../../../../utils/dimension.dart';
 import '../../../../utils/style.dart';
 

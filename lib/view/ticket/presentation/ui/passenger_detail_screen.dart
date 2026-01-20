@@ -18,7 +18,7 @@ import '../../../../components/appbar.dart';
 import '../../../../utils/bottom_sheets/button.dart';
 import '../../../../utils/bottom_sheets/gender_select.dart';
 import '../../../../utils/bottom_sheets/selectNationality.dart';
-import '../../../../utils/colors.dart';
+import '../../../../theme/app_colors.dart';
 import '../../../../utils/dimension.dart';
 
 class PassengerDetailScreen extends GetView<PassengerDetailController> {
@@ -232,16 +232,9 @@ class PassengerDetailScreen extends GetView<PassengerDetailController> {
           Container(
             constraints: const BoxConstraints(minHeight: 64),
             decoration: BoxDecoration(
-              border: Border.all(color: AppColors.borderColor),
+              border: Border.all(color: Colors.black.withAlpha(100), width: 1),
               borderRadius: BorderRadius.circular(6),
               color: Colors.white,
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withOpacity(0.20),
-                  blurRadius: 1,
-                  offset: const Offset(0, 1),
-                ),
-              ],
             ),
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 15),
@@ -340,13 +333,13 @@ class PassengerDetailScreen extends GetView<PassengerDetailController> {
                 hintText: 'លេខទូរស័ព្ទ',
                 enabledBorder: OutlineInputBorder(
                   borderSide: BorderSide(
-                    color: hasError ? Colors.red : AppColors.borderColor,
+                    color: hasError ? Colors.red : Colors.black.withAlpha(100),
                     width: 1.0,
                   ),
                 ),
                 focusedBorder: OutlineInputBorder(
                   borderSide: BorderSide(
-                    color: hasError ? Colors.red : AppColors.primaryColor,
+                    color: hasError ? Colors.red : Colors.black.withAlpha(100),
                     width: 1.0,
                   ),
                 ),
@@ -355,7 +348,7 @@ class PassengerDetailScreen extends GetView<PassengerDetailController> {
                 ),
                 border: OutlineInputBorder(
                   borderSide: BorderSide(
-                    color: hasError ? Colors.red : AppColors.borderColor,
+                    color: hasError ? Colors.red : Colors.black.withAlpha(100),
                     width: 1.0,
                   ),
                 ),
@@ -424,7 +417,8 @@ class PassengerDetailScreen extends GetView<PassengerDetailController> {
               suffixIcon: AppIcons.IC_search,
               assetImage: const AssetImage(AppIcons.IC_flag),
               borderRadius: BorderRadius.circular(5),
-              borderColor: AppColors.borderColor,
+              borderColor: Colors.black.withAlpha(100),
+              borderWidth: 1,
               hasError: hasError,
               errorText: hasError ? "* សូមជ្រើសរើសសញ្ជាតិ" : null,
               isEnabled: nationalList.isNotEmpty,
@@ -512,8 +506,10 @@ class PassengerDetailScreen extends GetView<PassengerDetailController> {
                             return Row(
                               children: [
                                 GenderSelectOption(
-                                  borderColor:
-                                      hasEmpty ? Colors.red : Colors.black26,
+                                  borderColor: hasEmpty
+                                      ? Colors.red
+                                      : Colors.black.withAlpha(100),
+                                  borderWidth: 1,
                                   assetImage:
                                       const AssetImage(AppIcons.IC_female),
                                   value: controller.uiState.value.female.value,
@@ -526,8 +522,10 @@ class PassengerDetailScreen extends GetView<PassengerDetailController> {
                                 ),
                                 const SizedBox(width: 20),
                                 GenderSelectOption(
-                                  borderColor:
-                                      hasEmpty ? Colors.red : Colors.black26,
+                                  borderColor: hasEmpty
+                                      ? Colors.red
+                                      : Colors.black.withAlpha(100),
+                                  borderWidth: 1,
                                   assetImage:
                                       const AssetImage(AppIcons.IC_male),
                                   value: controller.uiState.value.male.value,
@@ -566,12 +564,12 @@ class PassengerDetailScreen extends GetView<PassengerDetailController> {
     final con = controller.uiState.value;
 
     return Container(
-      decoration: const BoxDecoration(
+      decoration: BoxDecoration(
         color: Colors.white,
         boxShadow: [
           BoxShadow(
-              color: AppColors.drawerColor,
-              offset: Offset(2, 2),
+              color: Colors.black.withAlpha(100),
+              offset: const Offset(1, 1),
               spreadRadius: 2,
               blurRadius: 2),
         ],

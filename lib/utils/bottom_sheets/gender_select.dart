@@ -58,13 +58,13 @@ class _GenderSelectOptionState extends State<GenderSelectOption> {
             color: selected ? Colors.transparent : widget.borderColor,
             width: widget.borderWidth,
           ),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.20),
-              blurRadius: 1,
-              offset: const Offset(0, 1),
-            ),
-          ],
+          // boxShadow: [s
+          //   BoxShadow(
+          //     color: Colors.black.withOpacity(0.20),
+          //     blurRadius: 1,
+          //     offset: const Offset(0, 1),
+          //   ),
+          // ],
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,

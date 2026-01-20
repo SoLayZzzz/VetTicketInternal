@@ -4,7 +4,7 @@ import 'package:vet_internal_ticket/app_icons.dart';
 import 'package:vet_internal_ticket/theme/app_padding.dart';
 import 'package:vet_internal_ticket/view/ticket/presentation/controller/schedule_controller.dart';
 import '../../../../utils/bottom_sheets/schedule_list.dart';
-import '../../../../utils/colors.dart';
+import '../../../../theme/app_colors.dart';
 import '../../../../utils/dimension.dart';
 
 class ScheduleListScreen extends GetView<ScheduleController> {

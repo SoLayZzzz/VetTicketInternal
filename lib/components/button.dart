@@ -1,7 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
-import '../utils/colors.dart';
+import '../theme/app_colors.dart';
 import '../utils/dimension.dart';
 
 SizedBox buttonElevated(String title, Function() onClick) {

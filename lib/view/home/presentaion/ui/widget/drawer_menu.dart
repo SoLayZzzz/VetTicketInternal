@@ -3,7 +3,7 @@ import 'package:get/get.dart';
 
 import 'package:vet_internal_ticket/app_route.dart';
 import 'package:vet_internal_ticket/view/auth/presentation/controller/auth_controller.dart';
-import '../../../../../utils/colors.dart';
+import '../../../../../theme/app_colors.dart';
 import '../../../../../utils/dialog/alert_dialog.dart';
 import '../../../../../utils/dimension.dart';
 

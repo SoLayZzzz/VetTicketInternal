@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
-import '../colors.dart';
+import '../../theme/app_colors.dart';
 
 //* Dialog One Button
 void showDialogOneButton({
@@ -26,7 +26,8 @@ void showDialogOneButton({
             child: Material(
               color: Colors.transparent,
               child: Column(
-                mainAxisSize: MainAxisSize.min, // Ensure the column takes up minimum space
+                mainAxisSize: MainAxisSize
+                    .min, // Ensure the column takes up minimum space
                 children: [
                   const SizedBox(height: 10),
                   Text(
@@ -95,7 +96,8 @@ void showDialogTwoButton(
             child: Material(
               color: Colors.transparent,
               child: Column(
-                mainAxisSize: MainAxisSize.min, // Ensure the column takes up minimum space
+                mainAxisSize: MainAxisSize
+                    .min, // Ensure the column takes up minimum space
                 children: [
                   const SizedBox(height: 10),
                   Text(

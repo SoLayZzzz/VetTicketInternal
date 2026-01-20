@@ -1,4 +1,16 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+
+class DatePickerController extends GetxController {
+  DatePickerController({this.selectedDate});
+
+  DateTime? selectedDate;
+
+  void setDate(DateTime? date) {
+    selectedDate = date;
+    update();
+  }
+}
 
 class DatePicker extends StatefulWidget {
   const DatePicker({
@@ -11,6 +23,8 @@ class DatePicker extends StatefulWidget {
     this.allowPastDates = false,
     this.backgroundColor,
     this.selectedDateColor,
+    this.borderColor,
+    this.borderWidth = 0.5,
     this.assetImage = const AssetImage("images/assets/ic_flag.png"),
     this.showCurrentDateAuto = true,
     this.clearable = true,
@@ -23,6 +37,8 @@ class DatePicker extends StatefulWidget {
   final bool allowPastDates;
   final Color? backgroundColor;
   final Color? selectedDateColor;
+  final Color? borderColor;
+  final double borderWidth;
   final AssetImage? assetImage;
   final double? fontSize;
   final bool showCurrentDateAuto;
@@ -34,15 +50,33 @@ class DatePicker extends StatefulWidget {
 }
 
 class _DatePickerState extends State<DatePicker> {
-  DateTime? selectDate;
+  late final String _controllerTag;
+  late final DatePickerController _controller;
 
   @override
   void initState() {
     super.initState();
+    _controllerTag = '${widget.hashCode}_${identityHashCode(this)}';
+    _controller = Get.put(
+      DatePickerController(),
+      tag: _controllerTag,
+    );
     if (widget.showCurrentDateAuto) {
-      selectDate = DateTime.now();
-      _formatAndSendDate(selectDate!);
+      final now = DateTime.now();
+      _controller.setDate(now);
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted) return;
+        _formatAndSendDate(now);
+      });
     }
+  }
+
+  @override
+  void dispose() {
+    if (Get.isRegistered<DatePickerController>(tag: _controllerTag)) {
+      Get.delete<DatePickerController>(tag: _controllerTag);
+    }
+    super.dispose();
   }
 
   Future<void> _selectDate() async {
@@ -51,7 +85,7 @@ class _DatePickerState extends State<DatePicker> {
 
     final DateTime? pickedDate = await showDatePicker(
       context: context,
-      initialDate: selectDate ?? widget.minDate ?? currentDate,
+      initialDate: _controller.selectedDate ?? widget.minDate ?? currentDate,
       firstDate: widget.minDate ??
           (widget.allowPastDates ? DateTime(2000) : currentDate),
       lastDate: DateTime(2100),
@@ -71,9 +105,7 @@ class _DatePickerState extends State<DatePicker> {
     );
 
     if (pickedDate != null) {
-      setState(() {
-        selectDate = pickedDate;
-      });
+      _controller.setDate(pickedDate);
       _formatAndSendDate(pickedDate);
     }
   }
@@ -81,9 +113,7 @@ class _DatePickerState extends State<DatePicker> {
   void _clearDate() {
     if (!widget.clearable) return;
 
-    setState(() {
-      selectDate = null;
-    });
+    _controller.setDate(null);
     if (widget.onSeclectDate != null) {
       widget.onSeclectDate!("");
     }
@@ -107,15 +137,11 @@ class _DatePickerState extends State<DatePicker> {
         width: widget.width,
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(5),
-          border: Border.all(width: 1, color: Colors.grey.shade400),
+          border: Border.all(
+            width: widget.borderWidth,
+            color: widget.borderColor ?? Colors.black,
+          ),
           color: Colors.white,
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.20),
-              blurRadius: 1,
-              offset: const Offset(0, 1),
-            ),
-          ],
         ),
         child: Row(
           children: [
@@ -124,25 +150,39 @@ class _DatePickerState extends State<DatePicker> {
               child: Image(image: widget.assetImage!, width: 25),
             ),
             Expanded(
-              child: FittedBox(
-                fit: BoxFit.scaleDown,
-                alignment: Alignment.centerLeft,
-                child: Text(
-                  selectDate != null
-                      ? '${selectDate!.year}/${selectDate!.month}/${selectDate!.day}'
-                      : "${widget.text}",
-                  style: TextStyle(fontSize: widget.fontSize),
-                  maxLines: 1,
-                ),
+              child: GetBuilder<DatePickerController>(
+                tag: _controllerTag,
+                builder: (controller) {
+                  final date = controller.selectedDate;
+                  return FittedBox(
+                    fit: BoxFit.scaleDown,
+                    alignment: Alignment.centerLeft,
+                    child: Text(
+                      date != null
+                          ? '${date.year}/${date.month}/${date.day}'
+                          : "${widget.text}",
+                      style: TextStyle(fontSize: widget.fontSize),
+                      maxLines: 1,
+                    ),
+                  );
+                },
               ),
             ),
-            if (widget.clearable && selectDate != null)
-              IconButton(
-                icon: const Icon(Icons.close, size: 15),
-                onPressed: _clearDate,
-                padding: EdgeInsets.zero,
-                constraints: const BoxConstraints(),
-              ),
+            GetBuilder<DatePickerController>(
+              tag: _controllerTag,
+              builder: (controller) {
+                if (!widget.clearable || controller.selectedDate == null) {
+                  return const SizedBox.shrink();
+                }
+
+                return IconButton(
+                  icon: const Icon(Icons.close, size: 15),
+                  onPressed: _clearDate,
+                  padding: EdgeInsets.zero,
+                  constraints: const BoxConstraints(),
+                );
+              },
+            ),
           ],
         ),
       ),

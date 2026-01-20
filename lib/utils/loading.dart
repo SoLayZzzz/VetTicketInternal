@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import 'colors.dart';
+import '../theme/app_colors.dart';
 
 class Loading {
   void loadingShow(context) {

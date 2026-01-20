@@ -2,7 +2,7 @@ import 'dart:io';
 import 'package:device_info_plus/device_info_plus.dart';
 import 'package:flutter/material.dart';
 
-import 'colors.dart';
+import '../theme/app_colors.dart';
 
 //* scrollable
 ScrollPhysics getScrollPhysics() {

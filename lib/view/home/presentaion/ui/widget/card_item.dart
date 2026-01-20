@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:vet_internal_ticket/utils/bottom_sheets/app_padding.dart';
 
-import '../../../../../utils/colors.dart';
+import '../../../../../theme/app_colors.dart';
 import '../../../../../utils/dimension.dart';
 
 class CardItem extends StatelessWidget {
@@ -28,13 +28,12 @@ class CardItem extends StatelessWidget {
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: Dimension.padding12),
           decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(AppPadding.extraLarge),
+            borderRadius: BorderRadius.circular(AppPadding.medium),
             color: Colors.white,
-            boxShadow: [
+            boxShadow: const [
               BoxShadow(
-                color: Colors.black.withOpacity(0.20),
+                color: Colors.black,
                 blurRadius: 1,
-                offset: const Offset(0, 1),
               ),
             ],
           ),
@@ -44,7 +43,7 @@ class CardItem extends StatelessWidget {
             children: [
               CircleAvatar(
                   radius: 35,
-                  backgroundColor: Colors.grey.shade200,
+                  backgroundColor: AppColors.grey,
                   child: Image.asset(
                     img,
                     height: Dimension.iconSize40,

@@ -8,7 +8,7 @@ import 'package:vet_internal_ticket/view/ticket/presentation/widget/seat_layout.
 import '../../../../components/appbar.dart';
 import '../../../../theme/app_padding.dart';
 import '../../../../utils/bottom_sheets/button.dart';
-import '../../../../utils/colors.dart';
+import '../../../../theme/app_colors.dart';
 import '../../../../utils/dimension.dart';
 
 class SelectSeatScreen extends GetView<SeatController> {
@@ -75,13 +75,13 @@ class SelectSeatScreen extends GetView<SeatController> {
 
       return hasSelectedSeats
           ? Container(
-              decoration: const BoxDecoration(
+              decoration: BoxDecoration(
                 boxShadow: [
                   BoxShadow(
-                      color: AppColors.drawerColor,
-                      offset: Offset(2, 2),
+                      color: Colors.black.withAlpha(100),
+                      offset: const Offset(1, 1),
                       spreadRadius: 2,
-                      blurRadius: 2)
+                      blurRadius: 2),
                 ],
               ),
               child: BottomAppBar(

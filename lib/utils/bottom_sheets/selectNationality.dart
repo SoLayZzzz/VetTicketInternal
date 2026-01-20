@@ -128,15 +128,15 @@ class _SelectNationalityState extends State<SelectNationality> {
                 width: widget.borderWidth,
                 color: widget.hasError ? Colors.red : widget.borderColor!,
               ),
-              boxShadow: widget.boxShadow ??
-                  [
-                    BoxShadow(
-                      color: Colors.transparent,
-                      blurRadius: 10,
-                      spreadRadius: 0,
-                      offset: const Offset(0, 4),
-                    ),
-                  ],
+              // boxShadow: widget.boxShadow ??
+              //     [
+              //       BoxShadow(
+              //         color: Colors.transparent,
+              //         blurRadius: 10,
+              //         spreadRadius: 0,
+              //         offset: const Offset(0, 4),
+              //       ),
+              //     ],
             ),
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 10),

@@ -5,7 +5,7 @@ import 'package:vet_internal_ticket/app_icons.dart';
 
 import '../../../../components/appbar.dart';
 import '../../../../components/button.dart';
-import '../../../../utils/colors.dart';
+import '../../../../theme/app_colors.dart';
 import '../../../../utils/dimension.dart';
 import '../../../../utils/style.dart';
 

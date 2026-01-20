@@ -7,7 +7,7 @@ import 'package:get/get.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:vet_internal_ticket/core/base/state_controller.dart';
 import 'package:vet_internal_ticket/theme/app_padding.dart';
-import 'package:vet_internal_ticket/utils/colors.dart';
+import 'package:vet_internal_ticket/theme/app_colors.dart';
 import 'package:vet_internal_ticket/view/car_scan/data/model/request/checkIn_request.dart';
 import 'package:vet_internal_ticket/view/car_scan/data/model/response/bus_list_response.dart';
 import 'package:vet_internal_ticket/view/car_scan/data/model/response/checkIn_layout_response.dart';
