@@ -6,55 +6,14 @@ import 'package:vet_internal_ticket/components/appbar.dart';
 import 'package:vet_internal_ticket/components/text.dart';
 import 'package:vet_internal_ticket/utils/bottom_sheets/app_padding.dart';
 import 'package:vet_internal_ticket/theme/app_colors.dart';
+import 'package:vet_internal_ticket/view/home/presentaion/controller/car_history_detail_controller.dart';
 
 class CarHistoryDetailScreen extends StatelessWidget {
   const CarHistoryDetailScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
-    final args =
-        (Get.arguments is Map) ? (Get.arguments as Map) : <dynamic, dynamic>{};
-
-    final String route = (args['route']?.toString().isNotEmpty ?? false)
-        ? args['route'].toString()
-        : 'Battambang - Phnom Penh';
-
-    final String code = (args['code']?.toString().isNotEmpty ?? false)
-        ? args['code'].toString()
-        : 'VETAB-T2601000586';
-
-    final String dateTime = (args['date']?.toString().isNotEmpty ?? false)
-        ? args['date'].toString()
-        : '2026-01-04 (07:30:00)';
-
-    final String vehicle = (args['vehicle']?.toString().isNotEmpty ?? false)
-        ? args['vehicle'].toString()
-        : 'Air Bus 35 Seats';
-
-    final String passengerName =
-        (args['passengerName']?.toString().isNotEmpty ?? false)
-            ? args['passengerName'].toString()
-            : 'Sopheap';
-
-    final String gender = (args['gender']?.toString().isNotEmpty ?? false)
-        ? args['gender'].toString()
-        : 'Male';
-
-    final String nationality =
-        (args['nationality']?.toString().isNotEmpty ?? false)
-            ? args['nationality'].toString()
-            : 'Khmer';
-
-    final String seatNo = (args['seatNo']?.toString().isNotEmpty ?? false)
-        ? args['seatNo'].toString()
-        : '2A';
-
-    final String phone = (args['phone']?.toString().isNotEmpty ?? false)
-        ? args['phone'].toString()
-        : '086986093';
-    final String payment = (args['payment']?.toString().isNotEmpty ?? false)
-        ? args['payment'].toString()
-        : 'Cash';
+    final controller = Get.find<CarHistoryDetailController>();
 
     return Scaffold(
       appBar: appBarDefault(
@@ -62,25 +21,103 @@ class CarHistoryDetailScreen extends StatelessWidget {
         onPressed: () => Get.back(),
       ),
       backgroundColor: Colors.grey.shade100,
-      body: ListView(
-        children: [
-          _buildImage(code, route, dateTime),
-          const SizedBox(height: 14),
-          _buildCartDisplay(
-            vehicle: vehicle,
-            phone: phone,
-            payment: payment,
-            passengerName: passengerName,
-            gender: gender,
-            nationality: nationality,
-            seatNo: seatNo,
-          ),
-        ],
-      ),
+      body: Obx(() {
+        final st = controller.uiState.value;
+        if (st.isLoading.value) {
+          return const Center(child: CircularProgressIndicator());
+        }
+
+        if (st.errorMessage.value.isNotEmpty) {
+          return Center(
+            child: Text(
+              st.errorMessage.value,
+              style: const TextStyle(color: Colors.red),
+            ),
+          );
+        }
+
+        final item = st.item;
+        final from = item?.destinationFrom ?? 'Battambang';
+        final to = item?.destinationTo ?? 'Phnom Penh';
+        final route = '$from - $to';
+
+        final code = item?.code ?? 'VETAB-T2601000586';
+
+        final departure = (item?.departure ?? '').split('.').first;
+        final date = item?.travelDate ?? item?.bookingDate ?? '2026-01-04';
+        final dateTime =
+            departure.isNotEmpty ? '$date ($departure)' : '$date (07:30:00)';
+
+        final vehicle = item?.transportationType ?? 'Air Bus 35 Seats';
+        final phone = item?.telephone ?? '086986093';
+        final payment = item?.paymentType ?? 'Cash';
+
+        final seat = (item?.bookingSeatDetailList?.isNotEmpty == true)
+            ? item!.bookingSeatDetailList!.first
+            : null;
+
+        final nationality =
+            (seat?.nationalityName?.toString().isNotEmpty ?? false)
+                ? seat!.nationalityName!.toString()
+                : 'Khmer';
+
+        final seatNo = (seat?.seatNumber?.toString().isNotEmpty ?? false)
+            ? seat!.seatNumber!.toString()
+            : '-';
+
+        final genderText = () {
+          final raw = seat?.gender?.toString().trim();
+          if (raw == null || raw.isEmpty) {
+            return '-';
+          }
+          if (raw == '1' || raw.toLowerCase() == 'male') {
+            return 'Male';
+          }
+          if (raw == '2' || raw.toLowerCase() == 'female') {
+            return 'Female';
+          }
+          return '-';
+        }();
+
+        final seatGenderLabel = '$seatNo-$genderText';
+
+        return ListView(
+          children: [
+            _buildImage(code, route, dateTime, seatGenderLabel),
+            const SizedBox(height: 14),
+            _buildCartDisplay(
+              vehicle: vehicle,
+              phone: phone,
+              payment: payment,
+              passengerName: 'Sopheap',
+              gender: genderText,
+              nationality: nationality,
+              seatNo: seatNo,
+              travelDate: date,
+              boardingName: item?.boardingPoint ?? '',
+              boardingTime: departure.isNotEmpty ? '($departure)' : '',
+              boardingAddress: item?.boardingPointAddress ?? '',
+              boardingLat: item?.boardingPointLat ?? '',
+              boardingLng: item?.boardingPointLong ?? '',
+              dropOffName: item?.dropOffPoint ?? '',
+              dropOffTime: (item?.arrival ?? '').isNotEmpty
+                  ? '(${(item?.arrival ?? '').split('.').first})'
+                  : '',
+              dropOffAddress: item?.dropOffPointAddress ?? '',
+              dropOffLat: item?.dropOffPointLat ?? '',
+              dropOffLng: item?.dropOffPointLong ?? '',
+              subTotal: item?.subTotal ?? '\$ 12.00',
+              totalAmount: item?.totalAmount ?? '\$ 12.00',
+              discount: item?.discount ?? '\$ 0.00',
+            ),
+          ],
+        );
+      }),
     );
   }
 
-  Widget _buildImage(String code, String route, String dateTime) {
+  Widget _buildImage(
+      String code, String route, String dateTime, String seatGenderLabel) {
     return ClipRRect(
       child: AspectRatio(
         aspectRatio: 11 / 10,
@@ -113,8 +150,8 @@ class CarHistoryDetailScreen extends StatelessWidget {
                           size: qrSize,
                           backgroundColor: Colors.white,
                         ),
-                        const TextSmall(
-                          text: '2A-ប្រុស',
+                        TextSmall(
+                          text: seatGenderLabel,
                           fontWeight: FontWeight.w600,
                         ),
                       ],
@@ -171,6 +208,20 @@ class CarHistoryDetailScreen extends StatelessWidget {
     required String gender,
     required String nationality,
     required String seatNo,
+    required String travelDate,
+    required String boardingName,
+    required String boardingTime,
+    required String boardingAddress,
+    required String boardingLat,
+    required String boardingLng,
+    required String dropOffName,
+    required String dropOffTime,
+    required String dropOffAddress,
+    required String dropOffLat,
+    required String dropOffLng,
+    required String subTotal,
+    required String totalAmount,
+    required String discount,
   }) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: AppPadding.large),
@@ -206,31 +257,38 @@ class CarHistoryDetailScreen extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(height: 10),
-                const _InfoRow(label: 'ថ្ងៃធ្វើដំណើរ', value: '2026-01-03'),
+                _InfoRow(label: 'ថ្ងៃធ្វើដំណើរ', value: travelDate),
                 _InfoRow(label: 'លេខទូរស័ព្ទ', value: phone),
                 _InfoRow(label: 'ទូទាត់', value: payment),
               ],
             ),
           ),
-          const Padding(
-            padding: EdgeInsets.symmetric(vertical: 14),
+          Padding(
+            padding: const EdgeInsets.symmetric(vertical: 14),
             child: _StationCard(
               title: 'ចំណតឡើង:',
-              name: 'Battambang Lok ta Dombong kronhoung',
-              time: '(07:30:00)',
-              address:
-                  'National Road 5 , Romchek 4 village, Sangkat Rattanak, Battambang City , Battambang',
-              latitude: 11.568280,
-              longitude: 104.890670,
+              name: boardingName.isNotEmpty
+                  ? boardingName
+                  : 'Battambang Lok ta Dombong kronhoung',
+              time: boardingTime.isNotEmpty ? boardingTime : '(07:30:00)',
+              address: boardingAddress.isNotEmpty
+                  ? boardingAddress
+                  : 'National Road 5 , Romchek 4 village, Sangkat Rattanak, Battambang City , Battambang',
+              latitude: double.tryParse(boardingLat) ?? 11.568280,
+              longitude: double.tryParse(boardingLng) ?? 104.890670,
             ),
           ),
-          const _StationCard(
+          _StationCard(
             title: 'ចំណតចុះ:',
-            name: 'Phnom Penh (Cannon Rifle Roundabout Park)',
-            time: '(11:30:00)',
-            address: 'Oknha Dekcho Ei (St. 76), Phnom Penh, Cambodia',
-            latitude: 11.5703975,
-            longitude: 104.8980857,
+            name: dropOffName.isNotEmpty
+                ? dropOffName
+                : 'Phnom Penh (Cannon Rifle Roundabout Park)',
+            time: dropOffTime.isNotEmpty ? dropOffTime : '(11:30:00)',
+            address: dropOffAddress.isNotEmpty
+                ? dropOffAddress
+                : 'Oknha Dekcho Ei (St. 76), Phnom Penh, Cambodia',
+            latitude: double.tryParse(dropOffLat) ?? 11.5703975,
+            longitude: double.tryParse(dropOffLng) ?? 104.8980857,
           ),
           Padding(
             padding: const EdgeInsets.symmetric(vertical: 14),
@@ -270,13 +328,13 @@ class CarHistoryDetailScreen extends StatelessWidget {
                 ),
               ],
             ),
-            child: const Column(
+            child: Column(
               children: [
-                _PriceRow(label: 'សរុប', value: '\$ 12.00'),
-                SizedBox(height: 8),
-                _PriceRow(label: 'បង់រួច', value: '\$ 12.00'),
-                SizedBox(height: 8),
-                _PriceRow(label: 'បញ្ចុះតម្លៃ', value: '\$ 0.00'),
+                _PriceRow(label: 'សរុប', value: subTotal),
+                const SizedBox(height: 8),
+                _PriceRow(label: 'បង់រួច', value: totalAmount),
+                const SizedBox(height: 8),
+                _PriceRow(label: 'បញ្ចុះតម្លៃ', value: discount),
               ],
             ),
           ),

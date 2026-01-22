@@ -1,4 +1,4 @@
-class SeatUrl {
+class SeatEndpoint {
   static const seatLayout = 'seat/layout';
   static const seatList = 'seat/list';
   static const seatUnavailable = 'seat/unavailable';

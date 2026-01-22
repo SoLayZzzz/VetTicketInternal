@@ -1,4 +1,4 @@
-import 'package:vet_internal_ticket/core/app_url/schedule_url.dart';
+import 'package:vet_internal_ticket/core/app_endpoint/schedule_endpoint.dart';
 import 'package:vet_internal_ticket/core/base/contentType.dart';
 import 'package:vet_internal_ticket/core/network/network_data_source.dart';
 
@@ -11,7 +11,7 @@ class ScheduleNetwork {
 
   Future<ScheduleModel> schedule(ScheduleBody body) async {
     final response = await _networkDataSource.safePost(
-      ScheduleUrl.scheduleListByDate,
+      ScheduleEndpoint.scheduleListByDate,
       body.toMap(),
       contentType: ContentTypeVET.contentType,
       decoder: (data) {

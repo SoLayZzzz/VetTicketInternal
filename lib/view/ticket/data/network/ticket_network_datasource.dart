@@ -1,5 +1,5 @@
 // ignore_for_file: prefer_const_declarations
-import 'package:vet_internal_ticket/core/app_url/destination_url.dart';
+import 'package:vet_internal_ticket/core/app_endpoint/destination_endpoint.dart';
 import 'package:vet_internal_ticket/core/base/contentType.dart';
 
 import 'package:vet_internal_ticket/core/network/network_data_source.dart';
@@ -14,7 +14,7 @@ class TicketNetworkDatasource {
 
   Future<DestinationFromModel> destiFrom(DestinationFromBody body) async {
     final response = await _networkDataSource.safePost(
-      DestinationUrl.destinationFrom,
+      DestinationEndpoint.destinationFrom,
       body.toMap(),
       contentType: ContentTypeVET.contentType,
       decoder: (data) {
@@ -31,7 +31,7 @@ class TicketNetworkDatasource {
 
   Future<DestinationFromModel> destiTo(DestinationToBody body) async {
     final response = await _networkDataSource.safePost(
-      DestinationUrl.destinationTo,
+      DestinationEndpoint.destinationTo,
       body.toMap(),
       contentType: ContentTypeVET.contentType,
       decoder: (data) {

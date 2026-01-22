@@ -6,7 +6,7 @@ import 'package:flutter/foundation.dart';
 import 'package:get/get.dart';
 import 'package:get/get_connect/http/src/request/request.dart';
 import 'package:vet_internal_ticket/app_route.dart';
-import 'package:vet_internal_ticket/core/app_url/base_url.dart';
+import 'package:vet_internal_ticket/core/url/base_url.dart';
 import 'package:vet_internal_ticket/core/base/api_error.dart';
 import 'package:vet_internal_ticket/utils/preference/app_pref.dart';
 import 'package:vet_internal_ticket/view/auth/domain/repsositories/user_repository.dart';

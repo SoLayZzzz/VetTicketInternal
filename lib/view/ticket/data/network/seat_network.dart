@@ -1,4 +1,4 @@
-import 'package:vet_internal_ticket/core/app_url/seat_url.dart';
+import 'package:vet_internal_ticket/core/app_endpoint/seat_endpoint.dart';
 import 'package:vet_internal_ticket/core/base/contentType.dart';
 import 'package:vet_internal_ticket/core/network/network_data_source.dart';
 import 'package:vet_internal_ticket/view/ticket/data/model/request/seat_body.dart';
@@ -11,7 +11,7 @@ class SeatNetwork {
 
   Future<SeatLayoutModel> seatLayout(SeatBody body) async {
     final response = await networkDataSource.safePost(
-      SeatUrl.seatLayout,
+      SeatEndpoint.seatLayout,
       body.toMap(),
       contentType: ContentTypeVET.contentType,
       decoder: (data) {
@@ -28,7 +28,7 @@ class SeatNetwork {
 
   Future<SeatUnavailableModel> seatUnavailable(SeatBody body) async {
     final response = await networkDataSource.safePost(
-      SeatUrl.seatUnavailable,
+      SeatEndpoint.seatUnavailable,
       body.toMap(),
       contentType: ContentTypeVET.contentType,
       decoder: (data) {

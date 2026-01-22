@@ -1,4 +1,4 @@
-class BoardingUrl {
+class BoardingEndpoint {
   static String boardingPointById(String id) {
     return 'boarding-point/findBySchedule/$id';
   }

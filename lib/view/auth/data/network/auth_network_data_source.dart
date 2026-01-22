@@ -1,4 +1,4 @@
-import 'package:vet_internal_ticket/core/app_url/auth_url.dart';
+import 'package:vet_internal_ticket/core/app_endpoint/auth_endpoint.dart';
 import 'package:vet_internal_ticket/core/base/header.dart';
 import 'package:vet_internal_ticket/core/network/network_data_source.dart';
 import 'package:vet_internal_ticket/view/auth/data/model/request/logOut_body.dart';
@@ -19,7 +19,7 @@ class AuthNetworkDataSource {
   Future<Header<LoginResponse>?> loginUserPassword(
           LoginUserPasswordBody loginBody) =>
       networkDataSource.safePost(
-        AuthUrl.authLogin,
+        AuthEndpoint.authLogin,
         loginBody.toJson(),
         query: {
           'deviceId': loginBody.deviceId,
@@ -33,7 +33,7 @@ class AuthNetworkDataSource {
 
   Future<Header<LogoutResponse>?> logOut(LogoutBody body) =>
       networkDataSource.safePost(
-        AuthUrl.authLogout,
+        AuthEndpoint.authLogout,
         body.toMap(),
         query: {'deviceId': body.deviceId},
         decoder: (data) => Header<LogoutResponse>.fromJson(data,
@@ -43,7 +43,7 @@ class AuthNetworkDataSource {
   Future<Header<AuthRefreshTokenResponse>?> loginRefreshToken(
           LoginRefreshTokenBodyRequest body) =>
       networkDataSource.safePost(
-        AuthUrl.authLoginWithRefreshToken,
+        AuthEndpoint.authLoginWithRefreshToken,
         body.toMap(),
         query: {'deviceId': body.deviceId, 'refreshToken': body.refreshToken},
         decoder: (data) => Header<AuthRefreshTokenResponse>.fromJson(
@@ -54,7 +54,7 @@ class AuthNetworkDataSource {
 
   Future<Header<AuthCheckPermissionResponse>?> loginCheckPermission() =>
       networkDataSource.safePost(
-        AuthUrl.authCheckPermission,
+        AuthEndpoint.authCheckPermission,
         null,
         decoder: (data) => Header<AuthCheckPermissionResponse>.fromJson(
             data,
@@ -64,7 +64,7 @@ class AuthNetworkDataSource {
 
   Future<Header<AuthCheckTokenResponse>?> loginCheckToken() =>
       networkDataSource.safePost(
-        AuthUrl.authCheckToken,
+        AuthEndpoint.authCheckToken,
         null,
         decoder: (data) => Header<AuthCheckTokenResponse>.fromJson(
             data, (json) => AuthCheckTokenResponse.fromJson(json)),
@@ -72,7 +72,7 @@ class AuthNetworkDataSource {
 
   Future<Header<AuthGetReportTokenResponse>?> loginGetReportToken() =>
       networkDataSource.safePost(
-        AuthUrl.authGetReportToken,
+        AuthEndpoint.authGetReportToken,
         null,
         decoder: (data) => Header<AuthGetReportTokenResponse>.fromJson(
             data,

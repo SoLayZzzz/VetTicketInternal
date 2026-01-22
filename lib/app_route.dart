@@ -12,13 +12,14 @@ import 'package:vet_internal_ticket/view/car_scan/presentation/ui/scan/bar_code_
 import 'package:vet_internal_ticket/view/car_scan/presentation/ui/scan/qr_scan.dart';
 import 'package:vet_internal_ticket/view/home/presentaion/ui/home_binding.dart';
 import 'package:vet_internal_ticket/view/home/presentaion/ui/car_history_screen.dart';
+import 'package:vet_internal_ticket/view/home/presentaion/ui/car_history_binding.dart';
 import 'package:vet_internal_ticket/view/home/presentaion/ui/car_history_detail_screen.dart';
+import 'package:vet_internal_ticket/view/home/presentaion/ui/car_history_detail_binding.dart';
 import 'package:vet_internal_ticket/view/home/presentaion/ui/car_history_map_screen.dart';
 import 'package:vet_internal_ticket/view/home/presentaion/ui/home_screen.dart';
 import 'package:vet_internal_ticket/view/home/presentaion/ui/widget/drawer_menu.dart';
 import 'package:vet_internal_ticket/view/printer/ui/BluetoothScreen.dart';
 import 'package:vet_internal_ticket/view/printer/ui/printerSetting.dart';
-
 import 'package:vet_internal_ticket/view/report/presentation/report_sale_binding.dart';
 import 'package:vet_internal_ticket/view/report/presentation/ui/report_balance_screen.dart';
 import 'package:vet_internal_ticket/view/report/presentation/ui/report_sale_screen.dart';
@@ -74,7 +75,7 @@ final getPages = [
   // ----------------------
   GetPage(
       name: AppRoutes.drawer_menu,
-      page: () => DrawerMenu(),
+      page: () => const DrawerMenu(),
       binding: AuthBinding()),
   // ----------------------
   GetPage(
@@ -85,11 +86,13 @@ final getPages = [
   GetPage(
     name: AppRoutes.car_history_screen,
     page: () => const CarHistoryScreen(),
+    binding: CarHistoryBinding(),
   ),
   // ----------------
   GetPage(
     name: AppRoutes.car_history_detail_screen,
     page: () => const CarHistoryDetailScreen(),
+    binding: CarHistoryDetailBinding(),
   ),
   // ----------------
   GetPage(
@@ -123,7 +126,7 @@ final getPages = [
   // ----------------
   GetPage(
       name: AppRoutes.ticket_menu_Screen,
-      page: () => TicketMenuScreen(),
+      page: () => const TicketMenuScreen(),
       binding: TicketMenuBinding()),
   // ----------------
   GetPage(
@@ -133,7 +136,7 @@ final getPages = [
 
   GetPage(
       name: AppRoutes.schedule_list_screen,
-      page: () => ScheduleListScreen(),
+      page: () => const ScheduleListScreen(),
       binding: ScheduleBinding()),
   // ----------------
   GetPage(
@@ -148,7 +151,7 @@ final getPages = [
   // ----------------
   GetPage(
       name: AppRoutes.transaction_screen,
-      page: () => TransactionScreen(),
+      page: () => const TransactionScreen(),
       binding: BookingBindding()),
 
   // ----------------
@@ -159,7 +162,7 @@ final getPages = [
   // ----------------
   GetPage(
     name: AppRoutes.qr_code_car_scan,
-    page: () => QRCodeCarScan(),
+    page: () => const QRCodeCarScan(),
   ),
 
   // ----------------

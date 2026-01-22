@@ -1,4 +1,4 @@
-import 'package:vet_internal_ticket/core/app_url/booking_url.dart';
+import 'package:vet_internal_ticket/core/app_endpoint/booking_endpoint.dart';
 import 'package:vet_internal_ticket/core/base/contentType.dart';
 import 'package:vet_internal_ticket/core/network/network_data_source.dart';
 import 'package:vet_internal_ticket/view/booking/data/model/request/booking_transaction_body.dart';
@@ -12,7 +12,7 @@ class BookingNetworkDatasourece {
   Future<BookingCheckTransactionModel> getBookingTransaction(
       BookingTransactionBody body) async {
     final reponse = await networkDataSource.safePost(
-      BookingUrl.bookingCheckTransaction,
+      BookingEndpoint.bookingCheckTransaction,
       body.toMap(),
       contentType: ContentTypeVET.contentType,
       decoder: (data) {

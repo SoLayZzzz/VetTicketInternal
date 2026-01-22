@@ -1,4 +1,4 @@
-class AuthUrl {
+class AuthEndpoint {
   static const authLogin = 'auth/login';
   static const authLogout = 'auth/logout';
   static const authCheckPermission = 'auth/checkPermission';

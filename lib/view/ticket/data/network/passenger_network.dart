@@ -1,8 +1,8 @@
 // ignore_for_file: avoid_print
 
-import 'package:vet_internal_ticket/core/app_url/boarding_url.dart';
-import 'package:vet_internal_ticket/core/app_url/booking_url.dart';
-import 'package:vet_internal_ticket/core/app_url/national_url.dart';
+import 'package:vet_internal_ticket/core/app_endpoint/boarding_endpoint.dart';
+import 'package:vet_internal_ticket/core/app_endpoint/booking_endpoint.dart';
+import 'package:vet_internal_ticket/core/app_endpoint/national_endpoint.dart';
 import 'package:vet_internal_ticket/core/base/contentType.dart';
 import 'package:vet_internal_ticket/core/network/network_data_source.dart';
 import 'package:vet_internal_ticket/view/booking/data/model/request/booking_cf_body.dart';
@@ -18,7 +18,7 @@ class PassengerNetwork {
     var body = {'id': id};
 
     final response = await _networkDataSource.safePost(
-      BoardingUrl.boardingPointById(id),
+      BoardingEndpoint.boardingPointById(id),
       body,
       contentType: ContentTypeVET.contentType,
       decoder: (data) {
@@ -36,7 +36,7 @@ class PassengerNetwork {
     var body = {'id': id};
 
     final response = await _networkDataSource.safePost(
-      BoardingUrl.downPointById(id),
+      BoardingEndpoint.downPointById(id),
       body,
       contentType: ContentTypeVET.contentType,
       decoder: (data) {
@@ -58,7 +58,7 @@ class PassengerNetwork {
     print(Uri(queryParameters: bodyData).query);
 
     final response = await _networkDataSource.safePost(
-      BookingUrl.bookingConfirm,
+      BookingEndpoint.bookingConfirm,
       bodyData,
       contentType: ContentTypeVET.contentType,
       decoder: (data) => BookingCofirmModel.fromJson(data),
@@ -73,7 +73,7 @@ class PassengerNetwork {
 
   Future<NationalistModel> getNational() async {
     final response = await _networkDataSource.safePost(
-        NationalUrl.bookingCheckIn, null,
+        NationalEndpoint.bookingCheckIn, null,
         contentType: ContentTypeVET.contentType, decoder: (data) {
       return NationalistModel.fromJson(data);
     });

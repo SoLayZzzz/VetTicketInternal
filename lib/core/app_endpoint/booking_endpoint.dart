@@ -1,4 +1,4 @@
-class BookingUrl {
+class BookingEndpoint {
   static const bookingCheckIn = 'booking/checkIn';
   static const bookingCheckInLayout = 'booking/checkInLayout';
   static const bookingCheckTransaction = 'booking/checkTransaction';

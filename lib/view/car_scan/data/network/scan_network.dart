@@ -1,6 +1,6 @@
-import 'package:vet_internal_ticket/core/app_url/scan_url.dart';
-import 'package:vet_internal_ticket/core/app_url/seat_url.dart';
-import 'package:vet_internal_ticket/core/app_url/transportation_url.dart';
+import 'package:vet_internal_ticket/core/app_endpoint/scan_endpoint.dart';
+import 'package:vet_internal_ticket/core/app_endpoint/seat_endpoint.dart';
+import 'package:vet_internal_ticket/core/app_endpoint/transportation_endpoint.dart';
 import 'package:vet_internal_ticket/core/base/contentType.dart';
 import 'package:vet_internal_ticket/core/network/network_data_source.dart';
 import 'package:vet_internal_ticket/view/car_scan/data/model/request/checkIn_request.dart';
@@ -15,7 +15,7 @@ class ScanNetwork {
 
   Future<BusListModel> getBuslist() async {
     final response = await networkDataSource.safePost(
-      TransportationUrl.busList,
+      TransportationEndpoint.busList,
       null,
       contentType: ContentTypeVET.contentType,
       decoder: (data) {
@@ -32,7 +32,7 @@ class ScanNetwork {
   Future<CheckinLayoutResponse> getSeatCheckinLayout(String id) async {
     var body = {'id': id};
     final response = await networkDataSource.safePost(
-      SeatUrl.seatCheckInLayout(id),
+      SeatEndpoint.seatCheckInLayout(id),
       body,
       contentType: ContentTypeVET.contentType,
       decoder: (data) {
@@ -49,7 +49,7 @@ class ScanNetwork {
 
   Future<CheckinResponse> getBookingCheckIn(CheckinBodyRequest body) async {
     final respone = await networkDataSource.safePost(
-      ScanUrl.checkIn,
+      ScanEndpoint.checkIn,
       body,
       query: {
         'busId': body.busId,
