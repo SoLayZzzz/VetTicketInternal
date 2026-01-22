@@ -73,10 +73,13 @@ class PassengerNetwork {
 
   Future<NationalistModel> getNational() async {
     final response = await _networkDataSource.safePost(
-        NationalEndpoint.bookingCheckIn, null,
-        contentType: ContentTypeVET.contentType, decoder: (data) {
-      return NationalistModel.fromJson(data);
-    });
+      NationalEndpoint.bookingCheckIn,
+      {},
+      contentType: ContentTypeVET.contentType,
+      decoder: (data) {
+        return NationalistModel.fromJson(data);
+      },
+    );
 
     if (response == null) {
       throw Exception('Faild to get national');

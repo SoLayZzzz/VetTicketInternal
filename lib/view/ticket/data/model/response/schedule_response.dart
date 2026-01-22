@@ -1,6 +1,27 @@
 import 'dart:convert';
 
-import 'package:vet_internal_ticket/core/base/header.dart';
+int? _asInt(dynamic value) {
+  if (value == null) return null;
+  if (value is int) return value;
+  if (value is num) return value.toInt();
+  if (value is String) {
+    final v = value.trim();
+    if (v.isEmpty) return null;
+    return int.tryParse(v) ?? double.tryParse(v)?.toInt();
+  }
+  return null;
+}
+
+num? _asNum(dynamic value) {
+  if (value == null) return null;
+  if (value is num) return value;
+  if (value is String) {
+    final v = value.trim();
+    if (v.isEmpty) return null;
+    return num.tryParse(v);
+  }
+  return null;
+}
 
 ScheduleModel scheduleModelFromJson(String str) =>
     ScheduleModel.fromJson(json.decode(str));
@@ -64,20 +85,20 @@ class ScheduleListResponse {
   String? departure;
   String? arrival;
   String? duration;
-  BoardingPoint? boardingPoint;
+  String? boardingPoint;
   int? boardingPointId;
-  DropOffPoint? dropOffPoint;
+  String? dropOffPoint;
   int? dropOffPointId;
   int? airCon;
   int? wc;
   int? snack;
   int? wifi;
   String? transportationType;
-  int? price;
-  int? priceForeigner;
-  int? agencyPrice;
-  int? agencyPriceForeigner;
-  int? companyPrice;
+  num? price;
+  num? priceForeigner;
+  num? agencyPrice;
+  num? agencyPriceForeigner;
+  num? companyPrice;
   int? totalSeat;
   int? seatAvailable;
   int? status;
@@ -88,6 +109,16 @@ class ScheduleListResponse {
   int? companyId;
   int? journeyId;
   int? steward;
+  String? transportationPhoto;
+  String? note;
+  List<SlidePhoto>? slidePhoto;
+  List<Amenity>? amenities;
+  String? transportRouteDisplay;
+  String? nationRoad;
+  int? scheduleType;
+  List<SchedulePoint>? boardingPointList;
+  List<SchedulePoint>? dropOffPointList;
+  int? vehicleType;
 
   ScheduleListResponse({
     this.id,
@@ -119,6 +150,16 @@ class ScheduleListResponse {
     this.companyId,
     this.journeyId,
     this.steward,
+    this.transportationPhoto,
+    this.note,
+    this.slidePhoto,
+    this.amenities,
+    this.transportRouteDisplay,
+    this.nationRoad,
+    this.scheduleType,
+    this.boardingPointList,
+    this.dropOffPointList,
+    this.vehicleType,
   });
 
   factory ScheduleListResponse.fromJson(Map<String, dynamic> json) =>
@@ -128,30 +169,52 @@ class ScheduleListResponse {
         departure: json["departure"],
         arrival: json["arrival"],
         duration: json["duration"],
-        boardingPoint: boardingPointValues.map[json["boardingPoint"]],
-        boardingPointId: (json["boardingPointId"] as num?)?.toInt(),
-        dropOffPoint: dropOffPointValues.map[json["dropOffPoint"]],
-        dropOffPointId: (json["dropOffPointId"] as num?)?.toInt(),
-        airCon: (json["airCon"] as num?)?.toInt(),
-        wc: (json["wc"] as num?)?.toInt(),
-        snack: (json["snack"] as num?)?.toInt(),
-        wifi: (json["wifi"] as num?)?.toInt(),
+        boardingPoint: json["boardingPoint"],
+        boardingPointId: _asInt(json["boardingPointId"]),
+        dropOffPoint: json["dropOffPoint"],
+        dropOffPointId: _asInt(json["dropOffPointId"]),
+        airCon: _asInt(json["airCon"]),
+        wc: _asInt(json["wc"]),
+        snack: _asInt(json["snack"]),
+        wifi: _asInt(json["wifi"]),
         transportationType: json["transportationType"],
-        price: (json["price"] as num?)?.toInt(),
-        priceForeigner: (json["priceForeigner"] as num?)?.toInt(),
-        agencyPrice: (json["agencyPrice"] as num?)?.toInt(),
-        agencyPriceForeigner: (json["agencyPriceForeigner"] as num?)?.toInt(),
-        companyPrice: (json["companyPrice"] as num?)?.toInt(),
-        totalSeat: (json["totalSeat"] as num?)?.toInt(),
-        seatAvailable: (json["seatAvailable"] as num?)?.toInt(),
-        status: (json["status"] as num?)?.toInt(),
-        allowPricePeriod: (json["allowPricePeriod"] as num?)?.toInt(),
-        transportationTypeId: (json["transportationTypeId"] as num?)?.toInt(),
-        type: (json["type"] as num?)?.toInt(),
-        routeId: (json["routeId"] as num?)?.toInt(),
-        companyId: (json["companyId"] as num?)?.toInt(),
-        journeyId: (json["journeyId"] as num?)?.toInt(),
-        steward: (json["steward"] as num?)?.toInt(),
+        price: _asNum(json["price"]),
+        priceForeigner: _asNum(json["priceForeigner"]),
+        agencyPrice: _asNum(json["agencyPrice"]),
+        agencyPriceForeigner: _asNum(json["agencyPriceForeigner"]),
+        companyPrice: _asNum(json["companyPrice"]),
+        totalSeat: _asInt(json["totalSeat"]),
+        seatAvailable: _asInt(json["seatAvailable"]),
+        status: _asInt(json["status"]),
+        allowPricePeriod: _asInt(json["allowPricePeriod"]),
+        transportationTypeId: _asInt(json["transportationTypeId"]),
+        type: _asInt(json["type"]),
+        routeId: _asInt(json["routeId"]),
+        companyId: _asInt(json["companyId"]),
+        journeyId: _asInt(json["journeyId"]),
+        steward: _asInt(json["steward"]),
+        transportationPhoto: json["transportationPhoto"],
+        note: json["note"],
+        slidePhoto: json["slidePhoto"] == null
+            ? []
+            : List<SlidePhoto>.from(
+                json["slidePhoto"]!.map((x) => SlidePhoto.fromJson(x))),
+        amenities: json["amenities"] == null
+            ? []
+            : List<Amenity>.from(
+                json["amenities"]!.map((x) => Amenity.fromJson(x))),
+        transportRouteDisplay: json["transportRouteDisplay"],
+        nationRoad: json["nationRoad"],
+        scheduleType: _asInt(json["scheduleType"]),
+        boardingPointList: json["boardingPointList"] == null
+            ? []
+            : List<SchedulePoint>.from(json["boardingPointList"]!
+                .map((x) => SchedulePoint.fromJson(x))),
+        dropOffPointList: json["dropOffPointList"] == null
+            ? []
+            : List<SchedulePoint>.from(json["dropOffPointList"]!
+                .map((x) => SchedulePoint.fromJson(x))),
+        vehicleType: _asInt(json["vehicleType"]),
       );
 
   Map<String, dynamic> toJson() => {
@@ -160,9 +223,9 @@ class ScheduleListResponse {
         "departure": departure,
         "arrival": arrival,
         "duration": duration,
-        "boardingPoint": boardingPointValues.reverse[boardingPoint],
+        "boardingPoint": boardingPoint,
         "boardingPointId": boardingPointId,
-        "dropOffPoint": dropOffPointValues.reverse[dropOffPoint],
+        "dropOffPoint": dropOffPoint,
         "dropOffPointId": dropOffPointId,
         "airCon": airCon,
         "wc": wc,
@@ -184,6 +247,20 @@ class ScheduleListResponse {
         "companyId": companyId,
         "journeyId": journeyId,
         "steward": steward,
+        "transportationPhoto": transportationPhoto,
+        "note": note,
+        "slidePhoto":
+            List<dynamic>.from((slidePhoto ?? []).map((x) => x.toJson())),
+        "amenities":
+            List<dynamic>.from((amenities ?? []).map((x) => x.toJson())),
+        "transportRouteDisplay": transportRouteDisplay,
+        "nationRoad": nationRoad,
+        "scheduleType": scheduleType,
+        "boardingPointList": List<dynamic>.from(
+            (boardingPointList ?? []).map((x) => x.toJson())),
+        "dropOffPointList":
+            List<dynamic>.from((dropOffPointList ?? []).map((x) => x.toJson())),
+        "vehicleType": vehicleType,
       };
 
   String get formattedDeparture {
@@ -221,6 +298,62 @@ class ScheduleListResponse {
     } catch (_) {}
     return departure ?? "";
   }
+}
+
+class SlidePhoto {
+  String? photo;
+
+  SlidePhoto({this.photo});
+
+  factory SlidePhoto.fromJson(Map<String, dynamic> json) =>
+      SlidePhoto(photo: json["photo"]);
+
+  Map<String, dynamic> toJson() => {
+        "photo": photo,
+      };
+}
+
+class Amenity {
+  String? icon;
+  String? name;
+
+  Amenity({this.icon, this.name});
+
+  factory Amenity.fromJson(Map<String, dynamic> json) => Amenity(
+        icon: json["icon"],
+        name: json["name"],
+      );
+
+  Map<String, dynamic> toJson() => {
+        "icon": icon,
+        "name": name,
+      };
+}
+
+class SchedulePoint {
+  String? id;
+  String? name;
+  String? address;
+  String? longs;
+  String? lats;
+
+  SchedulePoint({this.id, this.name, this.address, this.longs, this.lats});
+
+  factory SchedulePoint.fromJson(Map<String, dynamic> json) => SchedulePoint(
+        id: json["id"],
+        name: json["name"],
+        address: json["address"],
+        longs: json["longs"],
+        lats: json["lats"],
+      );
+
+  Map<String, dynamic> toJson() => {
+        "id": id,
+        "name": name,
+        "address": address,
+        "longs": longs,
+        "lats": lats,
+      };
 }
 
 enum BoardingPoint { PHNOM_PENH_CANNON_RIFLE_ROUNDABOUT_PARK }

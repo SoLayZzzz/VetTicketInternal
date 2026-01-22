@@ -1,5 +1,17 @@
 // ignore_for_file: unnecessary_new, prefer_collection_literals, unnecessary_this
 
+int? _asInt(dynamic value) {
+  if (value == null) return null;
+  if (value is int) return value;
+  if (value is num) return value.toInt();
+  if (value is String) {
+    final v = value.trim();
+    if (v.isEmpty) return null;
+    return int.tryParse(v) ?? double.tryParse(v)?.toInt();
+  }
+  return null;
+}
+
 class Header {
   int? serverTimestamp;
   bool? result;
@@ -61,7 +73,7 @@ class BoardingResponse {
   BoardingResponse({this.id, this.name, this.address, this.longs, this.lats});
 
   BoardingResponse.fromJson(Map<String, dynamic> json) {
-    id = json['id'];
+    id = _asInt(json['id']);
     name = json['name'];
     address = json['address'];
     longs = json['longs'];

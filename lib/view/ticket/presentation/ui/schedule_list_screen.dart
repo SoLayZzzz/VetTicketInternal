@@ -222,6 +222,9 @@ class ScheduleListScreen extends GetView<ScheduleController> {
               totalSeat: data.totalSeat ?? 0,
               price: data.price?.toDouble(),
               agencyPrice: data.agencyPrice?.toDouble(),
+              detailArguments: {
+                'schedule': data,
+              },
               buttonBackgroundColor:
                   isUnavailable ? Colors.grey : AppColors.primaryColor,
               buttonText: isUnavailable ? 'បានចាកចេញ' : 'កក់សំបុត្រ',

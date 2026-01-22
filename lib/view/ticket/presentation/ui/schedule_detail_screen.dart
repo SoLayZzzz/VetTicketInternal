@@ -1,9 +1,12 @@
 import 'dart:ui';
+import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:vet_internal_ticket/theme/app_colors.dart';
 import 'package:vet_internal_ticket/utils/dimension.dart';
+import 'package:vet_internal_ticket/view/ticket/data/model/response/schedule_response.dart';
+import 'package:vet_internal_ticket/view/ticket/presentation/controller/schedule_controller.dart';
 
 class ScheduleDetailScreen extends StatefulWidget {
   const ScheduleDetailScreen({super.key});
@@ -36,17 +39,44 @@ class _ScheduleDetailScreenState extends State<ScheduleDetailScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final pickupPoints = <Map<String, String>>[
-      {'name': 'Phnom Penh (Chaom Chao)', 'time': '15:00:00'},
-      {'name': 'Phnom Penh (Stueng Mean Chey)', 'time': '15:00:00'},
-      {'name': 'Phnom Penh Boeng Chhouk', 'time': '15:00:00'},
-      {'name': 'Phnom Penh (Olympic)', 'time': '15:30:00'},
-      {'name': 'Phnom Penh (Cannon Rifle Roundabout Park)', 'time': '16:00:00'},
-    ];
+    final args = Get.arguments;
+    ScheduleListResponse? schedule;
+    if (args is Map) {
+      final s = args['schedule'];
+      if (s is ScheduleListResponse) {
+        schedule = s;
+      }
+    }
 
-    final dropoffPoints = <Map<String, String>>[
-      {'name': 'Siem Reap Chong Kaosou', 'time': '22:00:00'},
-    ];
+    final pickupPoints = (schedule?.boardingPointList ?? [])
+        .map((p) => {
+              'name': _extractPointName(p.name),
+              'time': _extractPointTime(p.name),
+            })
+        .toList();
+
+    final dropoffPoints = (schedule?.dropOffPointList ?? [])
+        .map((p) => {
+              'name': _extractPointName(p.name),
+              'time': _extractPointTime(p.name),
+            })
+        .toList();
+
+    final networkImages = (schedule?.slidePhoto ?? [])
+        .map((e) => e.photo)
+        .whereType<String>()
+        .where((p) => p.trim().isNotEmpty)
+        .toList();
+
+    final images = networkImages.isNotEmpty
+        ? networkImages
+        : (schedule?.transportationPhoto != null &&
+                schedule!.transportationPhoto!.trim().isNotEmpty)
+            ? [schedule.transportationPhoto!.trim()]
+            : _images;
+
+    final canBook =
+        schedule != null && (schedule.id ?? '').toString().isNotEmpty;
 
     return Scaffold(
       appBar: AppBar(
@@ -101,13 +131,33 @@ class _ScheduleDetailScreenState extends State<ScheduleDetailScreen> {
                           children: [
                             PageView.builder(
                               controller: _pageController,
-                              itemCount: _images.length,
+                              itemCount: images.length,
                               onPageChanged: (index) {
                                 setState(() => _currentPage = index);
                               },
                               itemBuilder: (context, index) {
+                                final image = images[index];
+                                if (image.startsWith('http')) {
+                                  return Image.network(
+                                    image,
+                                    fit: BoxFit.cover,
+                                    loadingBuilder:
+                                        (context, child, loadingProgress) {
+                                      if (loadingProgress == null) {
+                                        return child;
+                                      }
+                                      return const _ImageSkeleton();
+                                    },
+                                    errorBuilder: (context, error, stackTrace) {
+                                      return Image.asset(
+                                        _images.first,
+                                        fit: BoxFit.cover,
+                                      );
+                                    },
+                                  );
+                                }
                                 return Image.asset(
-                                  _images[index],
+                                  image,
                                   fit: BoxFit.cover,
                                 );
                               },
@@ -141,7 +191,7 @@ class _ScheduleDetailScreenState extends State<ScheduleDetailScreen> {
                                             MainAxisAlignment.center,
                                         mainAxisSize: MainAxisSize.min,
                                         children: List.generate(
-                                          _images.length,
+                                          images.length,
                                           (index) => AnimatedContainer(
                                             duration: const Duration(
                                                 milliseconds: 200),
@@ -193,6 +243,47 @@ class _ScheduleDetailScreenState extends State<ScheduleDetailScreen> {
                   ),
                   const SizedBox(height: 8),
                   _PointList(points: dropoffPoints),
+                  if ((schedule?.amenities ?? []).isNotEmpty) ...[
+                    const SizedBox(height: 16),
+                    const Text(
+                      'គ្រឿងបរិក្ខា:',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                        color: AppColors.mainTextColor,
+                      ),
+                    ),
+                    _AmenitiesList(amenities: schedule!.amenities ?? []),
+                  ],
+                  if ((schedule?.note ?? '').trim().isNotEmpty) ...[
+                    const SizedBox(height: 16),
+                    const Text(
+                      'ចំណាំ:',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                        color: AppColors.mainTextColor,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(10),
+                        border: Border.all(color: Colors.grey.shade300),
+                      ),
+                      child: Text(
+                        schedule!.note!.trim(),
+                        style: const TextStyle(
+                          fontSize: 14,
+                          height: 1.4,
+                          color: AppColors.mainTextColor,
+                        ),
+                      ),
+                    ),
+                  ],
                 ],
               ),
             ),
@@ -208,7 +299,20 @@ class _ScheduleDetailScreenState extends State<ScheduleDetailScreen> {
                       borderRadius: BorderRadius.circular(10),
                     ),
                   ),
-                  onPressed: () => Get.back(),
+                  onPressed: !canBook
+                      ? null
+                      : () {
+                          final controller = Get.find<ScheduleController>();
+                          Get.back();
+                          Future.microtask(() {
+                            controller.navigateToSeat(
+                              schedule!.id.toString(),
+                              (schedule.journeyId ?? '').toString(),
+                              (schedule.price ?? 0).toString(),
+                              (schedule.totalSeat ?? 0).toString(),
+                            );
+                          });
+                        },
                   child: const Text(
                     'កក់សំបុត្រ',
                     style: TextStyle(
@@ -227,6 +331,159 @@ class _ScheduleDetailScreenState extends State<ScheduleDetailScreen> {
   }
 }
 
+class _AmenitiesList extends StatelessWidget {
+  const _AmenitiesList({required this.amenities});
+
+  final List<Amenity> amenities;
+
+  @override
+  Widget build(BuildContext context) {
+    return GridView.builder(
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      itemCount: amenities.length,
+      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: 4,
+        childAspectRatio: 1,
+      ),
+      itemBuilder: (context, index) {
+        final a = amenities[index];
+        final icon = (a.icon ?? '').trim();
+        final name = (a.name ?? '').trim();
+
+        return Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            if (icon.startsWith('http'))
+              Image.network(
+                icon,
+                width: 28,
+                height: 28,
+                fit: BoxFit.contain,
+                errorBuilder: (context, error, stackTrace) {
+                  return const Icon(
+                    Icons.check_circle_outline,
+                    size: 28,
+                    color: AppColors.primaryColor,
+                  );
+                },
+              )
+            else
+              const Icon(
+                Icons.photo_outlined,
+                size: 28,
+                color: AppColors.primaryColor,
+              ),
+            const SizedBox(height: 10),
+            Text(
+              name.isEmpty ? '-' : name,
+              textAlign: TextAlign.center,
+              // maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+              style: const TextStyle(
+                fontSize: 12,
+                color: AppColors.mainTextColor,
+                fontWeight: FontWeight.w500,
+                // height: 1.2,
+              ),
+            ),
+          ],
+        );
+      },
+    );
+  }
+}
+
+String _extractPointName(String? value) {
+  if (value == null) return '';
+  final trimmed = value.trim();
+  if (trimmed.isEmpty) return '';
+
+  final parts = trimmed.split(' ');
+  if (parts.isEmpty) return trimmed;
+
+  final last = parts.last;
+  if (_isTime(last)) {
+    return parts.sublist(0, parts.length - 1).join(' ');
+  }
+
+  return trimmed;
+}
+
+String _extractPointTime(String? value) {
+  if (value == null) return '';
+  final trimmed = value.trim();
+  if (trimmed.isEmpty) return '';
+
+  final parts = trimmed.split(' ');
+  if (parts.isEmpty) return '';
+
+  final last = parts.last;
+  return _isTime(last) ? last : '';
+}
+
+bool _isTime(String value) {
+  final v = value.trim();
+  if (v.isEmpty) return false;
+  final parts = v.split(':');
+  if (parts.length < 2) return false;
+  return int.tryParse(parts[0]) != null;
+}
+
+class _ImageSkeleton extends StatefulWidget {
+  const _ImageSkeleton();
+
+  @override
+  State<_ImageSkeleton> createState() => _ImageSkeletonState();
+}
+
+class _ImageSkeletonState extends State<_ImageSkeleton>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _controller;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1100),
+    )..repeat();
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedBuilder(
+      animation: _controller,
+      builder: (context, _) {
+        final t = _controller.value;
+        final begin = Alignment(-1.0 - 2 * t, 0);
+        final end = Alignment(1.0 + 2 * t, 0);
+
+        return Container(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: begin,
+              end: end,
+              colors: [
+                Colors.grey.shade300,
+                Colors.grey.shade100,
+                Colors.grey.shade300,
+              ],
+              stops: const [0.35, 0.5, 0.65],
+            ),
+          ),
+        );
+      },
+    );
+  }
+}
+
 class _PointList extends StatelessWidget {
   const _PointList({required this.points});
 
@@ -238,16 +495,10 @@ class _PointList extends StatelessWidget {
       decoration: BoxDecoration(
         border: Border.all(color: Colors.grey.shade300),
         color: Colors.white,
-        boxShadow: [
+        boxShadow: const [
           BoxShadow(
-            color: Colors.black.withOpacity(0.2),
-            blurRadius: 2,
-            offset: const Offset(0, 2),
-          ),
-          BoxShadow(
-            color: Colors.black.withOpacity(0.2),
-            blurRadius: 5,
-            offset: const Offset(0, 1),
+            color: Colors.black,
+            blurRadius: 1,
           ),
         ],
         borderRadius: BorderRadius.circular(10),
@@ -269,7 +520,7 @@ class _PointList extends StatelessWidget {
                     ),
                     subtitle: Text(
                       entry.value['time'] ?? '',
-                      style: const TextStyle(color: Colors.grey),
+                      style: const TextStyle(color: Colors.black),
                     ),
                     trailing: const Icon(
                       Icons.chevron_right,

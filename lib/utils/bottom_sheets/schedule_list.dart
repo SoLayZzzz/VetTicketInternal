@@ -22,6 +22,7 @@ class ScheduleList extends StatefulWidget {
     this.buttonText = "កក់សំបុត្រ",
     this.isButtonEnabled = true,
     this.textColor,
+    this.detailArguments,
   });
 
   final String startTime, middleTime, endTime;
@@ -35,6 +36,7 @@ class ScheduleList extends StatefulWidget {
   final String buttonText;
   final bool isButtonEnabled;
   final Color? textColor;
+  final dynamic detailArguments;
 
   @override
   State<ScheduleList> createState() => _ScheduleListState();
@@ -194,7 +196,10 @@ class _ScheduleListState extends State<ScheduleList> {
             Row(
               children: [
                 InkWell(
-                  onTap: () => Get.toNamed(AppRoutes.schedule_detail_screen),
+                  onTap: () => Get.toNamed(
+                    AppRoutes.schedule_detail_screen,
+                    arguments: widget.detailArguments,
+                  ),
                   child: const Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
