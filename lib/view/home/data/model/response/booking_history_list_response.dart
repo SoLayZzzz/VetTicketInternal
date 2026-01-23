@@ -99,6 +99,12 @@ class BookingHistoryItem {
   String? subTotal;
   String? discount;
   String? totalAmount;
+  String? totalVat;
+  int? isSurvey;
+  int? isLuckyDraw;
+  int? isTravelPackage;
+  int? journeyType;
+  int? totalSeat;
 
   BookingHistoryItem(
       {this.id,
@@ -116,7 +122,13 @@ class BookingHistoryItem {
       this.dropOffPoint,
       this.subTotal,
       this.discount,
-      this.totalAmount});
+      this.totalAmount,
+      this.totalVat,
+      this.isSurvey,
+      this.isLuckyDraw,
+      this.isTravelPackage,
+      this.journeyType,
+      this.totalSeat});
 
   BookingHistoryItem.fromJson(Map<String, dynamic> json) {
     id = json['id'];
@@ -135,6 +147,12 @@ class BookingHistoryItem {
     subTotal = json['subTotal'];
     discount = json['discount'];
     totalAmount = json['totalAmount'];
+    totalVat = json['totalVat'];
+    isSurvey = json['isSurvey'];
+    isLuckyDraw = json['isLuckyDraw'];
+    isTravelPackage = json['isTravelPackage'];
+    journeyType = json['journeyType'];
+    totalSeat = json['totalSeat'];
   }
 
   Map<String, dynamic> toJson() {
@@ -155,6 +173,12 @@ class BookingHistoryItem {
     data['subTotal'] = subTotal;
     data['discount'] = discount;
     data['totalAmount'] = totalAmount;
+    data['totalVat'] = totalVat;
+    data['isSurvey'] = isSurvey;
+    data['isLuckyDraw'] = isLuckyDraw;
+    data['isTravelPackage'] = isTravelPackage;
+    data['journeyType'] = journeyType;
+    data['totalSeat'] = totalSeat;
     return data;
   }
 }

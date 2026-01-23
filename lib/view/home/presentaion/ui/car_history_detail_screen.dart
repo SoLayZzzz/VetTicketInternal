@@ -89,7 +89,6 @@ class CarHistoryDetailScreen extends StatelessWidget {
               vehicle: vehicle,
               phone: phone,
               payment: payment,
-              passengerName: 'Sopheap',
               gender: genderText,
               nationality: nationality,
               seatNo: seatNo,
@@ -110,6 +109,7 @@ class CarHistoryDetailScreen extends StatelessWidget {
               totalAmount: item?.totalAmount ?? '\$ 12.00',
               discount: item?.discount ?? '\$ 0.00',
             ),
+            const SizedBox(height: 14),
           ],
         );
       }),
@@ -204,7 +204,6 @@ class CarHistoryDetailScreen extends StatelessWidget {
     required String vehicle,
     required String phone,
     required String payment,
-    required String passengerName,
     required String gender,
     required String nationality,
     required String seatNo,
@@ -307,7 +306,6 @@ class CarHistoryDetailScreen extends StatelessWidget {
               ),
               child: Column(
                 children: [
-                  _InfoRow(label: 'ឈ្មោះ', value: passengerName),
                   _InfoRow(label: 'ភេទ', value: gender),
                   _InfoRow(label: 'សញ្ជាតិ', value: nationality),
                   _InfoRow(label: 'លេខកៅអី', value: seatNo),

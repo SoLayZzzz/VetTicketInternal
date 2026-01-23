@@ -145,7 +145,7 @@ class CarHistoryScreen extends StatelessWidget {
                           size: 18, color: Colors.grey),
                       const SizedBox(width: 8),
                       Text(
-                        '${item['pax'] ?? '0'} pax',
+                        '${item['totalSeat'] ?? item['pax'] ?? '0'} pax',
                         style: const TextStyle(
                           fontSize: 14,
                           color: Colors.grey,
