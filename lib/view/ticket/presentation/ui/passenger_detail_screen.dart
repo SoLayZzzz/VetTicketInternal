@@ -13,12 +13,10 @@ import 'package:vet_internal_ticket/components/container_component.dart';
 import 'package:vet_internal_ticket/components/text.dart';
 import 'package:vet_internal_ticket/theme/app_padding.dart';
 import 'package:vet_internal_ticket/view/ticket/data/model/response/boarding_model.dart';
-import 'package:vet_internal_ticket/view/ticket/data/model/response/national_model.dart';
 import 'package:vet_internal_ticket/view/ticket/presentation/controller/passenger_detail_controller.dart';
 import '../../../../components/appbar.dart';
 import '../../../../utils/bottom_sheets/button.dart';
 import '../../../../utils/bottom_sheets/gender_select.dart';
-import '../../../../utils/bottom_sheets/selectNationality.dart';
 import '../../../../theme/app_colors.dart';
 import '../../../../utils/dimension.dart';
 
@@ -379,70 +377,6 @@ class PassengerDetailScreen extends GetView<PassengerDetailController> {
     );
   }
 
-  Widget _buildNationalitySelector() {
-    return Padding(
-      padding: const EdgeInsets.symmetric(
-        horizontal: AppPadding.large,
-        vertical: AppPadding.medium,
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Text.rich(
-            TextSpan(
-              children: [
-                TextSpan(text: 'សញ្ជាតិ ', style: TextStyle(fontSize: 15)),
-                TextSpan(
-                    text: '*',
-                    style: TextStyle(color: Color.fromARGB(255, 113, 78, 78))),
-              ],
-            ),
-          ),
-          const SizedBox(height: 8),
-          Obx(() {
-            final state = controller.uiState.value;
-            final nationalList = state.national.value?.body?.data ?? [];
-            final selectedId = state.selectedNationalityId.value;
-
-            final bool hasError = state.hasSubmitted.value &&
-                (state.showNationalityError.value || nationalList.isEmpty);
-
-            final selected = nationalList.firstWhere(
-              (item) => item.id == selectedId,
-              orElse: () => Data(id: 0, name: null),
-            );
-
-            return SelectNationality(
-              key: ValueKey("nationality_$selectedId"),
-              height: Get.height / 16,
-              nationalityList: nationalList.map((e) => e.name ?? '').toList(),
-              text: selected.name,
-              showChooseScreen: true,
-              title: "ជ្រើសរើស",
-              titleTextField: "ជ្រើសរើសសញ្ជាតិ",
-              hintText: "ជ្រើសរើសសញ្ជាតិ",
-              suffixIcon: AppIcons.IC_search,
-              assetImage: const AssetImage(AppIcons.IC_flag),
-              borderRadius: BorderRadius.circular(5),
-              borderColor: Colors.black.withAlpha(100),
-              borderWidth: 1,
-              hasError: hasError,
-              errorText: hasError ? "* សូមជ្រើសរើសសញ្ជាតិ" : null,
-              isEnabled: nationalList.isNotEmpty,
-              isLoading: state.isSelectingNationality.value,
-              onSelected: (index) {
-                final selectedItem = nationalList[index];
-                state.selectedNationalityId.value = selectedItem.id ?? 0;
-                state.showNationalityError.value = false;
-              },
-            );
-          }),
-        ],
-      ),
-    );
-  }
-
-  /// Reusable list of passengers (gender selection per seat).
   Widget _buildDataListCustomer(List<Map<String, String>> seats) => Padding(
         padding: const EdgeInsets.symmetric(horizontal: AppPadding.large),
         child: Column(
@@ -609,7 +543,10 @@ class PassengerDetailScreen extends GetView<PassengerDetailController> {
                 child: Button(
                   borderRadius: BorderRadius.circular(5),
                   color: AppColors.primaryColor,
-                  onTap: () => controller.validateAndSubmit(),
+                  onTap: () {
+                    if (controller.uiState.value.isLoading.value) return;
+                    controller.validateAndSubmit();
+                  },
                   child: Obx(() => TextExtraMedium(
                         text: controller.uiState.value.buttonText.value,
                         color: Colors.white,

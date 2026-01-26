@@ -33,6 +33,10 @@ class ReportScreen extends StatelessWidget {
                   height: Get.height / 13,
                   border: Border.all(color: AppColors.borderColor),
                   borderRadius: BorderRadius.circular(Dimension.border6),
+                  shadow: const BoxShadow(
+                    color: Colors.black,
+                    blurRadius: 1,
+                  ),
                   child: const Padding(
                     padding: EdgeInsets.symmetric(horizontal: AppPadding.large),
                     child: Row(
@@ -62,6 +66,10 @@ class ReportScreen extends StatelessWidget {
                   height: Get.height / 13,
                   border: Border.all(color: AppColors.borderColor),
                   borderRadius: BorderRadius.circular(Dimension.border6),
+                  shadow: const BoxShadow(
+                    color: Colors.black,
+                    blurRadius: 1,
+                  ),
                   child: const Padding(
                     padding: EdgeInsets.symmetric(horizontal: AppPadding.large),
                     child: Row(

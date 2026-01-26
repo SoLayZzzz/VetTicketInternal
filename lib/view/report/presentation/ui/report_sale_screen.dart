@@ -3,21 +3,16 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:vet_internal_ticket/app_icons.dart';
 import 'package:vet_internal_ticket/view/report/presentation/controller/report_sale_controller.dart';
+import 'package:vet_internal_ticket/utils/bottom_sheets/select_date.dart';
 
 import '../../../../components/appbar.dart';
 import '../../../../components/button.dart';
 import '../../../../theme/app_colors.dart';
 import '../../../../utils/dimension.dart';
-import '../../../../utils/style.dart';
 
 class ReportSaleScreen extends GetView<ReportSaleController> {
   const ReportSaleScreen({super.key});
 
-//   @override
-//   State<ReportSaleScreen> createState() => _ReportSaleScreenState();
-// }
-
-// class _ReportSaleScreenState extends State<ReportSaleScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -28,7 +23,7 @@ class ReportSaleScreen extends GetView<ReportSaleController> {
         },
       ),
       body: SafeArea(
-        child: Padding(
+        child: SingleChildScrollView(
           padding: const EdgeInsets.all(Dimension.padding16),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -48,22 +43,27 @@ class ReportSaleScreen extends GetView<ReportSaleController> {
                           border: Border.all(color: AppColors.borderColor),
                           borderRadius:
                               BorderRadius.circular(Dimension.border6),
+                          color: Colors.white,
+                          boxShadow: const [
+                            BoxShadow(
+                              color: Colors.black,
+                              blurRadius: 1,
+                            ),
+                          ],
                         ),
-                        child: Padding(
-                          padding: const EdgeInsets.all(Dimension.padding20),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              const Text(
-                                "2024-09-09",
-                                style: styleNormal14,
-                              ),
-                              Image.asset(
-                                AppIcons.IC_calender,
-                                width: Dimension.iconSize24,
-                              ),
-                            ],
-                          ),
+                        child: DatePicker(
+                          width: double.infinity,
+                          height: Get.height / 13,
+                          fontSize: 14,
+                          assetImage: AssetImage(AppIcons.IC_calender),
+                          clearable: false,
+                          allowPastDates: true,
+                          borderColor: Colors.transparent,
+                          borderWidth: 0,
+                          selectedDateColor: AppColors.primaryColor,
+                          onSeclectDate: (v) {
+                            controller.uiState.value.bookingDateFrom.value = v;
+                          },
                         ),
                       ),
                     ),
@@ -74,22 +74,29 @@ class ReportSaleScreen extends GetView<ReportSaleController> {
                           border: Border.all(color: AppColors.borderColor),
                           borderRadius:
                               BorderRadius.circular(Dimension.border6),
+                          color: Colors.white,
+                          boxShadow: const [
+                            BoxShadow(
+                              color: Colors.black,
+                              blurRadius: 1,
+                            ),
+                          ],
                         ),
-                        child: Padding(
-                          padding: const EdgeInsets.all(Dimension.padding20),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              const Text(
-                                "ថ្ងៃត្រលប់មកវិញ",
-                                style: styleNormal14,
-                              ),
-                              Image.asset(
-                                AppIcons.IC_calender,
-                                width: Dimension.iconSize24,
-                              ),
-                            ],
-                          ),
+                        child: DatePicker(
+                          width: double.infinity,
+                          height: Get.height / 13,
+                          fontSize: 14,
+                          assetImage: AssetImage(AppIcons.IC_calender),
+                          clearable: false,
+                          allowPastDates: true,
+                          borderColor: Colors.transparent,
+                          borderWidth: 0,
+                          selectedDateColor: AppColors.primaryColor,
+                          text: 'ថ្ងៃត្រលប់មកវិញ',
+                          showCurrentDateAuto: false,
+                          onSeclectDate: (v) {
+                            controller.uiState.value.bookingDateTo.value = v;
+                          },
                         ),
                       ),
                     ),
@@ -112,22 +119,38 @@ class ReportSaleScreen extends GetView<ReportSaleController> {
                           border: Border.all(color: AppColors.borderColor),
                           borderRadius:
                               BorderRadius.circular(Dimension.border6),
+                          color: Colors.white,
+                          boxShadow: const [
+                            BoxShadow(
+                              color: Colors.black,
+                              blurRadius: 1,
+                            ),
+                          ],
                         ),
-                        child: Padding(
-                          padding: const EdgeInsets.all(Dimension.padding20),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              const Text(
-                                "2024-09-09",
-                                style: styleNormal14,
-                              ),
-                              Image.asset(
-                                AppIcons.IC_calender,
-                                width: Dimension.iconSize24,
-                              ),
-                            ],
-                          ),
+                        child: DatePicker(
+                          width: double.infinity,
+                          height: Get.height / 13,
+                          fontSize: 14,
+                          assetImage: AssetImage(AppIcons.IC_calender),
+                          clearable: false,
+                          allowPastDates: true,
+                          borderColor: Colors.transparent,
+                          borderWidth: 0,
+                          selectedDateColor: AppColors.primaryColor,
+                          onSeclectDate: (v) {
+                            controller.uiState.value.travelDateFrom.value = v;
+                            final to =
+                                controller.uiState.value.travelDateTo.value;
+                            if (to.isNotEmpty) {
+                              final fromDt = DateTime.tryParse(v);
+                              final toDt = DateTime.tryParse(to);
+                              if (fromDt != null &&
+                                  toDt != null &&
+                                  toDt.isBefore(fromDt)) {
+                                controller.uiState.value.travelDateTo.value = v;
+                              }
+                            }
+                          },
                         ),
                       ),
                     ),
@@ -138,22 +161,29 @@ class ReportSaleScreen extends GetView<ReportSaleController> {
                           border: Border.all(color: AppColors.borderColor),
                           borderRadius:
                               BorderRadius.circular(Dimension.border6),
+                          color: Colors.white,
+                          boxShadow: const [
+                            BoxShadow(
+                              color: Colors.black,
+                              blurRadius: 1,
+                            ),
+                          ],
                         ),
-                        child: Padding(
-                          padding: const EdgeInsets.all(Dimension.padding20),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              const Text(
-                                "ថ្ងៃត្រលប់មកវិញ",
-                                style: styleNormal14,
-                              ),
-                              Image.asset(
-                                AppIcons.IC_calender,
-                                width: Dimension.iconSize24,
-                              ),
-                            ],
-                          ),
+                        child: DatePicker(
+                          width: double.infinity,
+                          height: Get.height / 13,
+                          fontSize: 14,
+                          assetImage: AssetImage(AppIcons.IC_calender),
+                          clearable: false,
+                          allowPastDates: true,
+                          borderColor: Colors.transparent,
+                          borderWidth: 0,
+                          selectedDateColor: AppColors.primaryColor,
+                          text: 'ថ្ងៃត្រលប់មកវិញ',
+                          showCurrentDateAuto: false,
+                          onSeclectDate: (v) {
+                            controller.uiState.value.travelDateTo.value = v;
+                          },
                         ),
                       ),
                     ),

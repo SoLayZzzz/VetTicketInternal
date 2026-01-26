@@ -68,6 +68,10 @@ class PassengerDetailController extends StateController<PasengerDetailState> {
     uiState.value.markup = booking.markup;
     uiState.value.totalPrice = booking.totalPrice;
 
+    if (uiState.value.selectedNationalityId.value == 0) {
+      uiState.value.selectedNationalityId.value = 1;
+    }
+
     // ✅ Start watching input for error clearing
     uiState.value.phoneController.addListener(() {
       final text = uiState.value.phoneController.text.trim();
@@ -185,6 +189,10 @@ class PassengerDetailController extends StateController<PasengerDetailState> {
   void validateAndSubmit() {
     final con = uiState.value;
 
+    print('🧾 [Passenger] Submit tapped');
+    print(
+        '🧾 [Passenger] booking.goScheduleId=${booking.goScheduleId} booking.returnScheduleId=${booking.returnScheduleId} booking.totalSeat=${booking.totalSeat} booking.markup=${booking.markup} booking.totalPrice=${booking.totalPrice}');
+
     // Mark that user attempted to submit
     con.hasSubmitted.value = true;
 
@@ -211,16 +219,24 @@ class PassengerDetailController extends StateController<PasengerDetailState> {
     con.showGenderError.value = hasGenderError;
 
     // Validate nationality
+    if (con.selectedNationalityId.value == 0) {
+      con.selectedNationalityId.value = 1;
+    }
     final hasNationalError = con.selectedNationalityId.value == 0;
     con.showNationalityError.value = hasNationalError;
 
+    print(
+        '🧾 [Passenger] Validation: phoneLen=$phoneLen phoneError=$hasPhoneError genderError=$hasGenderError nationalityId=${con.selectedNationalityId.value} nationalityError=$hasNationalError');
+
     // Show error if any
     if (hasPhoneError || hasGenderError || hasNationalError) {
+      print('🧾 [Passenger] Submit blocked by validation errors');
       return;
     }
 
     // Proceed to submit
     con.buttonText.value = 'កំពុងដំណើរការ...';
+    print('🧾 [Passenger] Calling postBookingConfirm()');
     postBookingConfirm();
   }
 
@@ -240,35 +256,32 @@ class PassengerDetailController extends StateController<PasengerDetailState> {
     }
 
     void showSnack() {
-      Get.snackbar(
-        title,
-        message,
-        duration: const Duration(seconds: 2),
-        snackPosition: SnackPosition.TOP,
-        backgroundColor: Colors.red,
-        colorText: Colors.white,
-      );
+      try {
+        final overlayContext = Get.overlayContext;
+        final hasOverlay =
+            overlayContext != null && Overlay.maybeOf(overlayContext) != null;
+        if (!hasOverlay) {
+          showDialog();
+          return;
+        }
+
+        Get.snackbar(
+          title,
+          message,
+          duration: const Duration(seconds: 2),
+          snackPosition: SnackPosition.TOP,
+          backgroundColor: Colors.red,
+          colorText: Colors.white,
+        );
+      } catch (_) {
+        showDialog();
+      }
     }
 
     try {
-      final overlayContext = Get.overlayContext;
-      final hasOverlay =
-          overlayContext != null && Overlay.maybeOf(overlayContext) != null;
-
-      if (hasOverlay) {
-        showSnack();
-        return;
-      }
-
       WidgetsBinding.instance.addPostFrameCallback((_) {
         try {
-          final ctx = Get.overlayContext;
-          final ready = ctx != null && Overlay.maybeOf(ctx) != null;
-          if (ready) {
-            showSnack();
-          } else {
-            showDialog();
-          }
+          showSnack();
         } catch (_) {
           showDialog();
         }
@@ -284,6 +297,10 @@ class PassengerDetailController extends StateController<PasengerDetailState> {
 
   Future<void> postBookingConfirm() async {
     final booking = Get.find<BookingService>().bookingData;
+
+    print('🧾 [Passenger] postBookingConfirm start');
+    print(
+        '🧾 [Passenger] booking.goScheduleId=${booking.goScheduleId} booking.returnScheduleId=${booking.returnScheduleId} booking.totalSeat=${booking.totalSeat} booking.markup=${booking.markup} booking.totalPrice=${booking.totalPrice}');
 
     final goBoarding = uiState.value.goBoardingStation.value;
     final goDrop = uiState.value.goDropStation.value;
@@ -351,6 +368,9 @@ class PassengerDetailController extends StateController<PasengerDetailState> {
     final totalAmount =
         seatPrices.fold<double>(0.0, (sum, price) => sum + double.parse(price));
 
+    print(
+        '🧾 [Passenger] Computed totalAmount(with per-seat markup)=${totalAmount.toStringAsFixed(2)} seats=${allSeats.length} seatPrices=$seatPrices');
+
     final phone = uiState.value.phoneController.text.trim();
 
     /// ✅ Build request body
@@ -363,7 +383,8 @@ class PassengerDetailController extends StateController<PasengerDetailState> {
       markup: booking.markup.toString(),
       name: 'admin',
       email: 'kkk@gmail.com',
-      nationally: uiState.value.selectedNationalityId.value.toString(),
+      // nationally: uiState.value.selectedNationalityId.value.toString(),
+      nationally: 1.toString(),
       seatGender: seatGenders,
       seatJourney: allSeats.map((s) => s['journeyId'] ?? '').toList(),
       seatNum: seatNumbers,
@@ -397,6 +418,10 @@ class PassengerDetailController extends StateController<PasengerDetailState> {
       final response = await passengerUscase.executeBookingComfirm(body);
       final status = response.body?.status ?? -1;
 
+      print('🧾 [Passenger] Booking confirm status=$status');
+
+      print("REsponse: $response");
+
       if (status == 0) {
         // 🚫 Seats unavailable
         _notifyError(
@@ -405,24 +430,46 @@ class PassengerDetailController extends StateController<PasengerDetailState> {
         );
       } else if (status == 1) {
         // ✅ Booking success
-        Get.offAllNamed(AppRoutes.transaction_screen, arguments: {
-          'masg': response.body?.msg,
-          'transactionId': response.body?.transactionId,
-          'status': response.body?.status,
-          'totalPrice': totalAmount.toStringAsFixed(2),
-          'totalSeat': totalSeats.toString(),
+        final transactionId = response.body?.transactionId?.toString() ?? '';
+        print('🧾 [Passenger] Success transactionId=$transactionId');
+        if (transactionId.isEmpty) {
+          _notifyError(
+            title: "Error",
+            message: "Transaction ID missing. Please try again.",
+          );
+          return;
+        }
+
+        if (Get.isDialogOpen == true) {
+          Get.back();
+        }
+
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          print(
+              '🧾 [Passenger] Navigating to transaction_screen totalPrice=${totalAmount.toStringAsFixed(2)} totalSeat=$totalSeats');
+          Get.toNamed(AppRoutes.transaction_screen, arguments: {
+            'masg': response.body?.msg,
+            'transactionId': transactionId,
+            'status': response.body?.status,
+            'totalPrice': totalAmount.toStringAsFixed(2),
+            'totalSeat': totalSeats.toString(),
+          });
         });
 
         Get.find<BookingService>().reset();
       } else {
         // 💸 Money not enough
+        print(
+            '🧾 [Passenger] Not navigating: status=$status (showPassengerInfoDialog)');
         showPassengerInfoDialog();
       }
     } catch (e) {
+      print('🧾 [Passenger] postBookingConfirm error: $e');
       uiState.value.errorMessage.value = e.toString();
     } finally {
       uiState.value.isLoading.value = false;
       uiState.value.buttonText.value = 'ដំណើរការដើម្បីចូលបង់ប្រាក់';
+      print('🧾 [Passenger] postBookingConfirm done loading=false');
     }
   }
 
@@ -430,7 +477,7 @@ class PassengerDetailController extends StateController<PasengerDetailState> {
     Get.dialog(
       barrierColor: Colors.grey.withAlpha(80),
       Dialog(
-        insetPadding: EdgeInsets.symmetric(horizontal: AppPadding.large),
+        insetPadding: const EdgeInsets.symmetric(horizontal: AppPadding.large),
         backgroundColor: AppColors.whiteColor,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(0)),
         child: Padding(
@@ -438,7 +485,7 @@ class PassengerDetailController extends StateController<PasengerDetailState> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Text(
+              const Text(
                 'ព័ត៍មាន',
                 style: TextStyle(
                   fontSize: 18,
@@ -446,7 +493,7 @@ class PassengerDetailController extends StateController<PasengerDetailState> {
                 ),
               ),
               const SizedBox(height: 10),
-              Text(
+              const Text(
                 'មិនមានទឹកប្រាក់គ្រប់គ្រាន់សម្រាប់ការកក់សំបុត្រទេ',
                 textAlign: TextAlign.center,
                 style: TextStyle(fontSize: 14, color: Colors.black87),
@@ -462,9 +509,9 @@ class PassengerDetailController extends StateController<PasengerDetailState> {
                     backgroundColor: AppColors.primaryColor,
                     shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(8)),
-                    padding: EdgeInsets.symmetric(vertical: 12),
+                    padding: const EdgeInsets.symmetric(vertical: 12),
                   ),
-                  child: Text(
+                  child: const Text(
                     'យល់ព្រម',
                     style: TextStyle(fontSize: 16, color: Colors.white),
                   ),
@@ -478,144 +525,3 @@ class PassengerDetailController extends StateController<PasengerDetailState> {
     );
   }
 }
-
-
-  // Future<void> postBookingConfirm() async {
-  //   final goBoarding = uiState.value.goBoardingStation.value;
-  //   final goDrop = uiState.value.goDropStation.value;
-  //   final returnBoarding = uiState.value.returnBoardingStation.value;
-  //   final returnDrop = uiState.value.returnDropStation.value;
-
-  //   // All seat data (each seat is a Map)
-  //   final List<Map<String, String>> allSeats = [
-  //     ...uiState.value.selectedSeats.map((seat) => {
-  //           ...seat,
-  //           'journeyId': booking.goScheduleId ?? '',
-  //         }),
-  //     ...uiState.value.selectedSeatback.map((seat) => {
-  //           ...seat,
-  //           'journeyId': booking.returnScheduleId ?? '',
-  //         }),
-  //   ];
-
-  //   // Seat details
-  //   final seatNumbers = allSeats.map((seat) => seat['value'] ?? '').toList();
-  //   final seatGenders = allSeats.map((seat) {
-  //     final id = seat['value'] ?? '';
-  //     return uiState.value.passengerGenders[id]?.toString() ?? '1';
-  //   }).toList();
-  //   final seatPrices = [
-  //     ...List.filled(
-  //         booking.goSelectedSeats.length, booking.goSeatPrice ?? '0.0'),
-  //     ...List.filled(
-  //         booking.returnSelectedSeats.length, booking.returnSeatPrice ?? '0.0'),
-  //   ];
-
-  //   final List<String> boardingIds = [];
-  //   final List<String> dropOffIds = [];
-  //   final List<String> journeyIds = [];
-  //   final List<String> dates = [];
-
-  //   if (uiState.value.selectedSeats.isNotEmpty) {
-  //     boardingIds.add(goBoarding?.id.toString() ?? '');
-  //     dropOffIds.add(goDrop?.id.toString() ?? '');
-  //     journeyIds.add(booking.goScheduleId ?? '');
-  //     dates.add(booking.goDate ?? '');
-  //   }
-
-  //   if (uiState.value.selectedSeatback.isNotEmpty) {
-  //     boardingIds.add(returnBoarding?.id.toString() ?? '');
-  //     dropOffIds.add(returnDrop?.id.toString() ?? '');
-  //     journeyIds.add(booking.returnScheduleId ?? '');
-  //     dates.add(booking.returnDate ?? '');
-  //   }
-
-  //   final journeyType = booking.returnDate?.isNotEmpty == true ? '2' : '1';
-  //   final totalAmount = booking.totalPrice;
-  //   final phone = uiState.value.phoneController.text.trim();
-
-  //   final body = BookingCfBody(
-  //     boardingPointId: boardingIds,
-  //     dropOffId: dropOffIds,
-  //     journeyDate: dates,
-  //     journeyId: journeyIds,
-  //     journeyType: journeyType,
-  //     markup: booking.markup.toString(),
-  //     name: 'admin',
-  //     email: 'kkk@gmail.com',
-  //     nationally: uiState.value.selectedNationalityId.value.toString(),
-  //     seatGender: seatGenders,
-  //     seatJourney: allSeats.map((s) => s['journeyId'] ?? '').toList(),
-  //     seatNum: seatNumbers,
-  //     seatPrice: seatPrices + markup,
-  //     telephone: phone,
-  //     totalAmount: totalAmount.toString(),
-  //     totalSeat: allSeats.length.toString(),
-  //   );
-
-  //   print("📦 Booking Confirmation Data:");
-  //   print("📋 boardingPointId: $boardingIds");
-  //   print("📋 dropOffId: $dropOffIds");
-  //   print("📋 journeyDate: $dates");
-  //   print("📋 journeyId: $journeyIds");
-  //   print("📋 journeyType: $journeyType");
-  //   print("📋 markup: ${booking.markup}");
-  //   print("📋 name: admin");
-  //   print("📋 email: kkk@gmail.com");
-  //   print("📋 nationally: ${uiState.value.selectedNationalityId.value}");
-  //   print("📋 seatGender: $seatGenders");
-  //   print("📋 seatJourney: ${allSeats.map((s) => s['journeyId'])}");
-  //   print("📋 seatNum: $seatNumbers");
-  //   print("📋 seatPrice: $seatPrices");
-  //   print("📋 telephone: $phone");
-  //   print("📋 totalAmount: ${totalAmount.toString()}");
-  //   print("📋 totalSeat: ${allSeats.length}");
-
-  //   try {
-  //     uiState.value.isLoading.value = true;
-  //     final response = await passengerUscase.executeBookingComfirm(body);
-  //     final status = response.body?.status ?? -1;
-
-  //     if (status == 0) {
-  //       // 🚫 Case: Seats not available
-  //       Get.snackbar(
-  //         "",
-  //         "",
-  //         titleText: TextSmall(
-  //           text: "Error",
-  //           color: AppColors.redColor,
-  //           fontWeight: FontWeight.bold,
-  //         ),
-  //         messageText: TextSmall(
-  //           text: "Sorry, some seats you selected are not available.",
-  //           color: AppColors.redColor,
-  //         ),
-  //         borderWidth: 1,
-  //         borderColor: AppColors.redColor,
-  //         margin: EdgeInsets.symmetric(horizontal: 10, vertical: 70),
-  //         padding: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-  //         backgroundColor: AppColors.whiteColor,
-  //         duration: Duration(seconds: 2),
-  //       );
-  //     } else if (status == 1) {
-  //       // ✅ Case: Booking success
-  //       Get.offAllNamed(AppRoutes.transaction_screen, arguments: {
-  //         'masg': response.body?.msg,
-  //         'transactionId': response.body?.transactionId,
-  //         'status': response.body?.status,
-  //         'totalPrice': totalAmount.toString(),
-  //         'totalSeat': allSeats.length.toString(),
-  //       });
-
-  //       Get.find<BookingService>().reset();
-  //     } else {
-  //       // 💸 Case: Money not enough
-  //       showPassengerInfoDialog();
-  //     }
-  //   } catch (e) {
-  //     uiState.value.errorMessage.value = e.toString();
-  //   } finally {
-  //     uiState.value.isLoading.value = false;
-  //     uiState.value.buttonText.value = 'ដំណើរការដើម្បីចូលបង់ប្រាក់';
-  //   }
-  // }

@@ -125,6 +125,15 @@ class SeatController extends StateController<SeatState> {
     final booking = Get.find<BookingService>().bookingData;
     final selectedSeats = state.selectedSeats.toList();
 
+    final seatPriceValue = double.tryParse(state.seatPrice ?? '0.0') ?? 0.0;
+    final markupValue = state.markup?.value ?? 0;
+    final totalSeatCount = selectedSeats.length;
+    final totalWithMarkup = (seatPriceValue * totalSeatCount) + markupValue;
+    print(
+        '🧾 [Seat] Confirm scheduleId=$scheduleId isReturnTrip=${state.isReturnTrip.value} seats=$selectedSeats');
+    print(
+        '🧾 [Seat] seatPrice=$seatPriceValue seatCount=$totalSeatCount markup=$markupValue totalWithMarkup=$totalWithMarkup');
+
     if (!state.isReturnTrip.value) {
       // Save Go Trip
       booking.goScheduleId = scheduleId;
@@ -138,6 +147,11 @@ class SeatController extends StateController<SeatState> {
 
       // If there is a return date, signal Schedule to flip
       if ((state.dateBack ?? '').isNotEmpty) {
+        booking.selectType = state.selectType;
+        booking.markup = state.markup?.value ?? 0;
+        booking.calculateTotalSeat();
+        booking.calculateTotalPrice();
+        booking.debugPrint();
         Get.back(result: 'go_confirmed');
         return;
       }
@@ -154,9 +168,15 @@ class SeatController extends StateController<SeatState> {
     }
 
     booking.selectType = state.selectType;
-    booking.markup = state.markup?.value ?? 0;
+    final currentMarkup = state.markup?.value ?? 0;
+    if (!state.isReturnTrip.value) {
+      booking.markup = currentMarkup;
+    } else {
+      booking.markup = booking.markup + currentMarkup;
+    }
     booking.calculateTotalSeat();
     booking.calculateTotalPrice();
+    booking.debugPrint();
 
     // If return is done (or there was no return), go to passenger details
     Get.toNamed(AppRoutes.passenger_detail_screen, arguments: {

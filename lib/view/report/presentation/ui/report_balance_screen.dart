@@ -2,12 +2,12 @@ import 'package:dropdown_button2/dropdown_button2.dart';
 import 'package:flutter/material.dart';
 import 'package:get/route_manager.dart';
 import 'package:vet_internal_ticket/app_icons.dart';
+import 'package:vet_internal_ticket/utils/bottom_sheets/select_date.dart';
 
 import '../../../../components/appbar.dart';
 import '../../../../components/button.dart';
 import '../../../../theme/app_colors.dart';
 import '../../../../utils/dimension.dart';
-import '../../../../utils/style.dart';
 
 class ReportBalanceScreen extends StatefulWidget {
   const ReportBalanceScreen({super.key});
@@ -20,17 +20,20 @@ class _ReportBalanceScreenState extends State<ReportBalanceScreen> {
   String? agency;
   final agencyItems = ['ប្រុស', 'ស្រី'];
 
+  String bookingDateFrom = '';
+  String bookingDateTo = '';
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: appBarDefault(
-        title: "របាយការណ៍លក់ (ភ្នាក់ងារ)",
+        title: "របាយការណ៍សមតុល្យ (ភ្នាក់ងារ)",
         onPressed: () {
           Get.back();
         },
       ),
       body: SafeArea(
-        child: Padding(
+        child: SingleChildScrollView(
           padding: const EdgeInsets.all(Dimension.padding16),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -50,22 +53,39 @@ class _ReportBalanceScreenState extends State<ReportBalanceScreen> {
                           border: Border.all(color: AppColors.borderColor),
                           borderRadius:
                               BorderRadius.circular(Dimension.border6),
+                          color: Colors.white,
+                          boxShadow: const [
+                            BoxShadow(
+                              color: Colors.black,
+                              blurRadius: 1,
+                            ),
+                          ],
                         ),
-                        child: Padding(
-                          padding: const EdgeInsets.all(Dimension.padding20),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              const Text(
-                                "2024-09-09",
-                                style: styleNormal14,
-                              ),
-                              Image.asset(
-                                AppIcons.IC_calender,
-                                width: Dimension.iconSize24,
-                              ),
-                            ],
-                          ),
+                        child: DatePicker(
+                          width: double.infinity,
+                          height: Get.height / 13,
+                          fontSize: 14,
+                          assetImage: const AssetImage(AppIcons.IC_calender),
+                          clearable: false,
+                          allowPastDates: true,
+                          borderColor: Colors.transparent,
+                          borderWidth: 0,
+                          selectedDateColor: AppColors.primaryColor,
+                          onSeclectDate: (v) {
+                            setState(() {
+                              bookingDateFrom = v;
+                              if (bookingDateTo.isNotEmpty) {
+                                final fromDt =
+                                    DateTime.tryParse(bookingDateFrom);
+                                final toDt = DateTime.tryParse(bookingDateTo);
+                                if (fromDt != null &&
+                                    toDt != null &&
+                                    toDt.isBefore(fromDt)) {
+                                  bookingDateTo = bookingDateFrom;
+                                }
+                              }
+                            });
+                          },
                         ),
                       ),
                     ),
@@ -76,22 +96,31 @@ class _ReportBalanceScreenState extends State<ReportBalanceScreen> {
                           border: Border.all(color: AppColors.borderColor),
                           borderRadius:
                               BorderRadius.circular(Dimension.border6),
+                          color: Colors.white,
+                          boxShadow: const [
+                            BoxShadow(
+                              color: Colors.black,
+                              blurRadius: 1,
+                            ),
+                          ],
                         ),
-                        child: Padding(
-                          padding: const EdgeInsets.all(Dimension.padding20),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              const Text(
-                                "ថ្ងៃត្រលប់មកវិញ",
-                                style: styleNormal14,
-                              ),
-                              Image.asset(
-                                AppIcons.IC_calender,
-                                width: Dimension.iconSize24,
-                              ),
-                            ],
-                          ),
+                        child: DatePicker(
+                          width: double.infinity,
+                          height: Get.height / 13,
+                          fontSize: 14,
+                          assetImage: AssetImage(AppIcons.IC_calender),
+                          clearable: false,
+                          allowPastDates: true,
+                          showCurrentDateAuto: false,
+                          text: 'ថ្ងៃត្រលប់មកវិញ',
+                          borderColor: Colors.transparent,
+                          borderWidth: 0,
+                          selectedDateColor: AppColors.primaryColor,
+                          onSeclectDate: (v) {
+                            setState(() {
+                              bookingDateTo = v;
+                            });
+                          },
                         ),
                       ),
                     ),

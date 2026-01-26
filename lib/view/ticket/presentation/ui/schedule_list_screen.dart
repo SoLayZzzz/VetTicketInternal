@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'dart:io';
 import 'package:get/get.dart';
+import 'package:keyboard_actions/keyboard_actions.dart';
 import 'package:vet_internal_ticket/app_icons.dart';
 import 'package:vet_internal_ticket/theme/app_padding.dart';
 import 'package:vet_internal_ticket/view/ticket/presentation/controller/schedule_controller.dart';
@@ -9,6 +12,27 @@ import '../../../../utils/dimension.dart';
 
 class ScheduleListScreen extends GetView<ScheduleController> {
   const ScheduleListScreen({super.key});
+
+  KeyboardActionsConfig _keyboardConfig() {
+    return KeyboardActionsConfig(
+      keyboardActionsPlatform: KeyboardActionsPlatform.IOS,
+      actions: [
+        KeyboardActionsItem(
+          focusNode: controller.markupFocus,
+          displayArrows: false,
+          toolbarButtons: [
+            (node) => Padding(
+                  padding: const EdgeInsets.only(right: 8),
+                  child: TextButton(
+                    onPressed: node.unfocus,
+                    child: const Text('Done'),
+                  ),
+                ),
+          ],
+        ),
+      ],
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -43,15 +67,26 @@ class ScheduleListScreen extends GetView<ScheduleController> {
           ),
         ],
       ),
-      body: Column(
-        children: [
-          Padding(
-            padding: const EdgeInsets.only(top: 15),
-            child: Obx(() => _buildLocationTitle()),
-          ),
-          _markUP(),
-          Obx(() => _buildListData())
-        ],
+      body: LayoutBuilder(
+        builder: (context, constraints) {
+          final bodyContent = SizedBox(
+            width: constraints.maxWidth,
+            height: constraints.maxHeight,
+            child: Column(
+              children: [
+                Padding(
+                  padding: const EdgeInsets.only(top: 15),
+                  child: Obx(() => _buildLocationTitle()),
+                ),
+                _markUP(),
+                Obx(() => _buildListData())
+              ],
+            ),
+          );
+
+          if (!Platform.isIOS) return bodyContent;
+          return KeyboardActions(config: _keyboardConfig(), child: bodyContent);
+        },
       ),
     );
   }
@@ -117,12 +152,31 @@ class ScheduleListScreen extends GetView<ScheduleController> {
                   child: Row(
                     children: [
                       Expanded(
-                        child: Obx(() => Text(
-                              '${controller.uiState.value.markup.value} \$',
-                              style: const TextStyle(
-                                  color: Colors.red, fontSize: 20),
-                              overflow: TextOverflow.ellipsis,
-                            )),
+                        child: TextField(
+                          controller: controller.markupController,
+                          focusNode: controller.markupFocus,
+                          keyboardType: TextInputType.number,
+                          inputFormatters: [
+                            FilteringTextInputFormatter.digitsOnly,
+                          ],
+                          style: const TextStyle(
+                            color: Colors.red,
+                            fontSize: 20,
+                          ),
+                          decoration: const InputDecoration(
+                            isDense: true,
+                            border: InputBorder.none,
+                            prefixText: '\$',
+                            prefixStyle: TextStyle(
+                              color: Colors.red,
+                              fontSize: 20,
+                            ),
+                          ),
+                          onChanged: (text) {
+                            final value = int.tryParse(text) ?? 0;
+                            controller.setMarkupFromInput(value);
+                          },
+                        ),
                       ),
                       Column(
                         mainAxisSize: MainAxisSize.min,

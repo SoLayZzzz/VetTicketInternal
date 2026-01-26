@@ -47,8 +47,6 @@ class ScheduleList extends StatefulWidget {
 class _ScheduleListState extends State<ScheduleList> {
   @override
   Widget build(BuildContext context) {
-    final double displayOldPrice = (widget.agencyPrice ?? 0).toDouble();
-    final double displayNewPrice = widget.price ?? 0;
     return Container(
       width: double.infinity,
       decoration: BoxDecoration(
@@ -127,7 +125,7 @@ class _ScheduleListState extends State<ScheduleList> {
 
             // Price and Button
             Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              mainAxisAlignment: MainAxisAlignment.start,
               children: [
                 Text.rich(
                   TextSpan(
@@ -151,38 +149,6 @@ class _ScheduleListState extends State<ScheduleList> {
                       const TextSpan(
                           text: "(Net)", style: TextStyle(fontSize: 14)),
                     ],
-                  ),
-                ),
-
-                // Updated Button with disabled state
-                Opacity(
-                  opacity: widget.isButtonEnabled ? 1.0 : 0.6,
-                  child: Material(
-                    color: widget.isButtonEnabled
-                        ? widget.buttonBackgroundColor
-                        : Colors.grey,
-                    borderRadius: BorderRadius.circular(10),
-                    child: InkWell(
-                      borderRadius: BorderRadius.circular(10),
-                      onTap: widget.isButtonEnabled ? widget.onTap : null,
-                      child: Container(
-                        height: 35,
-                        width: 120,
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 8,
-                          vertical: 4,
-                        ),
-                        child: Center(
-                          child: Text(
-                            widget.buttonText,
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
                   ),
                 ),
               ],
@@ -220,22 +186,35 @@ class _ScheduleListState extends State<ScheduleList> {
                   ),
                 ),
                 const Spacer(),
-                Row(
-                  children: [
-                    Text14(
-                      text: '\$${displayOldPrice.toStringAsFixed(2)}',
-                      translate: false,
-                      color: Colors.grey,
-                      textDecoration: TextDecoration.lineThrough,
+                Opacity(
+                  opacity: widget.isButtonEnabled ? 1.0 : 0.6,
+                  child: Material(
+                    color: widget.isButtonEnabled
+                        ? widget.buttonBackgroundColor
+                        : Colors.grey,
+                    borderRadius: BorderRadius.circular(10),
+                    child: InkWell(
+                      borderRadius: BorderRadius.circular(10),
+                      onTap: widget.isButtonEnabled ? widget.onTap : null,
+                      child: Container(
+                        height: 35,
+                        width: 120,
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 8,
+                          vertical: 4,
+                        ),
+                        child: Center(
+                          child: Text(
+                            widget.buttonText,
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                      ),
                     ),
-                    const SizedBox(width: 5),
-                    Text18(
-                      text: '\$${displayNewPrice.toStringAsFixed(2)}',
-                      translate: false,
-                      color: AppColors.primaryColor,
-                      fontWeight: FontWeight.w700,
-                    ),
-                  ],
+                  ),
                 ),
               ],
             ),

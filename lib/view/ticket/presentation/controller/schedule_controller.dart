@@ -15,6 +15,9 @@ class ScheduleController extends StateController<ScheduleState> {
   final ScheduleUscase scheduleUscase;
   ScheduleController(this.scheduleUscase);
 
+  final TextEditingController markupController = TextEditingController();
+  final FocusNode markupFocus = FocusNode();
+
   @override
   void onInit() {
     super.onInit();
@@ -62,6 +65,42 @@ class ScheduleController extends StateController<ScheduleState> {
         uiState.value.selectDate.value = uiState.value.selectDateBack.value;
       }
     }
+
+    _syncMarkupText();
+
+    markupFocus.addListener(() {
+      if (markupFocus.hasFocus) {
+        if (markupController.text.trim() == '0') {
+          markupController.clear();
+        }
+        return;
+      }
+
+      if (markupController.text.trim().isEmpty) {
+        markupController.value = const TextEditingValue(
+          text: '0',
+          selection: TextSelection.collapsed(offset: 1),
+        );
+        setMarkupFromInput(0);
+      }
+    });
+  }
+
+  @override
+  void onClose() {
+    markupController.dispose();
+    markupFocus.dispose();
+    super.onClose();
+  }
+
+  void _syncMarkupText() {
+    if (markupFocus.hasFocus) return;
+    final nextText = uiState.value.markup.value.toString();
+    if (markupController.text == nextText) return;
+    markupController.value = TextEditingValue(
+      text: nextText,
+      selection: TextSelection.collapsed(offset: nextText.length),
+    );
   }
 
   void getAgrumentFromTicket({
@@ -129,6 +168,10 @@ class ScheduleController extends StateController<ScheduleState> {
     final int markupValue = uiState.value.markup.value;
     final double totalPrice = seatPriceValue + markupValue;
 
+    print('🧾 [Schedule] Select scheduleId=$scheduleId journeyId=$journeyId');
+    print(
+        '🧾 [Schedule] isReturnTrip=${uiState.value.isReturnTrip.value} seatPrice=$seatPriceValue markup=$markupValue totalPrice=$totalPrice');
+
     final isReturn = uiState.value.isReturnTrip.value.obs;
     final dateGo = uiState.value.selectDate.value;
     final dateBack = uiState.value.selectDateBack.value;
@@ -166,6 +209,7 @@ class ScheduleController extends StateController<ScheduleState> {
 
     if (result == 'go_confirmed' && !isReturn.value && dateBack.isNotEmpty) {
       uiState.value.isReturnTrip.value = true;
+      setMarkupFromInput(0);
       await fetchScheduleList();
     }
   }
@@ -213,6 +257,7 @@ class ScheduleController extends StateController<ScheduleState> {
 
     if (result == 'go_confirmed') {
       uiState.value.isReturnTrip.value = true;
+      setMarkupFromInput(0);
       await fetchScheduleList();
       return;
     }
@@ -242,13 +287,21 @@ class ScheduleController extends StateController<ScheduleState> {
   void incrementMarkup() {
     if (uiState.value.markup.value < 5) {
       uiState.value.markup.value++;
+      _syncMarkupText();
     }
   }
 
   void decrementMarkup() {
     if (uiState.value.markup.value > 0) {
       uiState.value.markup.value--;
+      _syncMarkupText();
     }
+  }
+
+  void setMarkupFromInput(int value) {
+    final clamped = value.clamp(0, 5);
+    uiState.value.markup.value = clamped;
+    _syncMarkupText();
   }
 
   // For date

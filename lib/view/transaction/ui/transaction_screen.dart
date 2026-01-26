@@ -263,54 +263,63 @@ class _TransactionScreenState extends State<TransactionScreen>
     WidgetsBinding.instance.addObserver(this);
     // Show SnackBar when screen loads
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      Get.snackbar(
-        '',
-        '',
-        borderRadius: 5,
-        margin: const EdgeInsets.symmetric(vertical: 70, horizontal: 10),
-        padding: EdgeInsets.zero,
-        boxShadows: [
-          BoxShadow(
-            color: Colors.black.withAlpha(100),
-            offset: const Offset(1, 1),
-            spreadRadius: 2,
-            blurRadius: 2,
-          )
-        ],
-        titleText: const Padding(
-          padding: EdgeInsets.only(top: 30),
-          child: Row(
-            children: [
-              Padding(
-                padding: EdgeInsets.only(left: 10),
-                child: Icon(
-                  Icons.warning_amber_outlined,
-                  color: Colors.red,
-                ),
-              ),
-              Padding(
-                padding: EdgeInsets.only(left: 20),
-                child: TextExtraMedium(
-                  text: "Printer:",
-                  color: Colors.black,
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
-              Padding(
-                padding: EdgeInsets.symmetric(horizontal: AppPadding.small),
-                child: TextExtraMedium(
-                  text: "មិនទាន់ភ្ជាប់ម៉ាស៊ីនព្រីន",
-                  color: Colors.redAccent,
-                ),
+      try {
+        final overlayContext = Get.overlayContext;
+        final hasOverlay =
+            overlayContext != null && Overlay.maybeOf(overlayContext) != null;
+        if (hasOverlay) {
+          Get.snackbar(
+            '',
+            '',
+            borderRadius: 5,
+            margin: const EdgeInsets.symmetric(vertical: 70, horizontal: 10),
+            padding: EdgeInsets.zero,
+            boxShadows: [
+              BoxShadow(
+                color: Colors.black.withAlpha(100),
+                offset: const Offset(1, 1),
+                spreadRadius: 2,
+                blurRadius: 2,
               )
             ],
-          ),
-        ),
-        duration: const Duration(seconds: 2),
-        snackPosition: SnackPosition.TOP,
-        backgroundColor: Colors.white,
-        colorText: Colors.white,
-      );
+            titleText: const Padding(
+              padding: EdgeInsets.only(top: 30),
+              child: Row(
+                children: [
+                  Padding(
+                    padding: EdgeInsets.only(left: 10),
+                    child: Icon(
+                      Icons.warning_amber_outlined,
+                      color: Colors.red,
+                    ),
+                  ),
+                  Padding(
+                    padding: EdgeInsets.only(left: 20),
+                    child: TextExtraMedium(
+                      text: "Printer:",
+                      color: Colors.black,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                  Padding(
+                    padding: EdgeInsets.symmetric(horizontal: AppPadding.small),
+                    child: TextExtraMedium(
+                      text: "មិនទាន់ភ្ជាប់ម៉ាស៊ីនព្រីន",
+                      color: Colors.redAccent,
+                    ),
+                  )
+                ],
+              ),
+            ),
+            duration: const Duration(seconds: 2),
+            snackPosition: SnackPosition.TOP,
+            backgroundColor: Colors.white,
+            colorText: Colors.white,
+          );
+        }
+      } catch (e) {
+        print('🧾 [Transaction] Skip snackbar (no overlay): $e');
+      }
       if (mounted) {
         setState(() {
           _loadingBtDevices = false;
