@@ -165,7 +165,7 @@ class PassengerDetailController extends StateController<PasengerDetailState> {
   }
 
   Future<void> getNational() async {
-    uiState.value.isLoading.value = true;
+    uiState.value.isSelectingNationality.value = true;
     uiState.value.errorMessage.value = '';
     try {
       final response = await passengerUscase.getNational();
@@ -178,7 +178,7 @@ class PassengerDetailController extends StateController<PasengerDetailState> {
     } catch (e) {
       uiState.value.errorMessage.value = e.toString();
     } finally {
-      uiState.value.isLoading.value = false;
+      uiState.value.isSelectingNationality.value = false;
     }
   }
 
@@ -190,11 +190,12 @@ class PassengerDetailController extends StateController<PasengerDetailState> {
 
     // Reset error flags
     con.showPhoneError.value = false;
-    con.showNationalError.value = false;
+    con.showNationalityError.value = false;
     con.showGenderError.value = false;
 
     // Validate phone
-    final hasPhoneError = con.phoneController.text.trim().length < 8;
+    final phoneLen = con.phoneController.text.trim().length;
+    final hasPhoneError = phoneLen < 8 || phoneLen > 10;
     con.showPhoneError.value = hasPhoneError;
 
     // Validate gender per seat
@@ -210,8 +211,7 @@ class PassengerDetailController extends StateController<PasengerDetailState> {
     con.showGenderError.value = hasGenderError;
 
     // Validate nationality
-    final hasNationalError =
-        con.selectedNationalityId.value == 0 || con.nationalityNames.isEmpty;
+    final hasNationalError = con.selectedNationalityId.value == 0;
     con.showNationalityError.value = hasNationalError;
 
     // Show error if any

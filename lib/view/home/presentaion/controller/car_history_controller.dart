@@ -36,32 +36,7 @@ class CarHistoryController extends StateController<CarHistoryState> {
 
       final list = response.body?.data ?? [];
 
-      st.histories.value = list.map((e) {
-        final from = e.destinationFrom ?? '';
-        final to = e.destinationTo ?? '';
-        final departure = (e.departure ?? '').split('.').first;
-        final date = e.travelDate ?? e.bookingDate ?? '';
-
-        return <String, String>{
-          'id': (e.id ?? 0).toString(),
-          'route': '$from - $to',
-          'code': e.code ?? '',
-          'date': departure.isNotEmpty ? '$date ($departure)' : date,
-          'vehicle': e.transportationType ?? '',
-          'pax': (e.totalSeat ?? 0).toString(),
-          'totalSeat': (e.totalSeat ?? 0).toString(),
-          'payment': e.paymentType ?? '',
-          'boardingPoint': e.boardingPoint ?? '',
-          'dropOffPoint': e.dropOffPoint ?? '',
-          'subTotal': e.subTotal ?? '',
-          'discount': e.discount ?? '',
-          'totalAmount': e.totalAmount ?? '',
-          'arrival': e.arrival ?? '',
-          'duration': e.duration ?? '',
-          'bookingDate': e.bookingDate ?? '',
-          'travelDate': e.travelDate ?? '',
-        };
-      }).toList();
+      st.histories.value = list;
     } catch (e) {
       st.errorMessage.value = e.toString();
       st.histories.clear();

@@ -53,6 +53,14 @@ class _DatePickerState extends State<DatePicker> {
   late final String _controllerTag;
   late final DatePickerController _controller;
 
+  DateTime _dateOnly(DateTime d) => DateTime(d.year, d.month, d.day);
+
+  DateTime _maxDate(DateTime a, DateTime b) => a.isAfter(b) ? a : b;
+
+  String _formatYmd(DateTime date) {
+    return "${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}";
+  }
+
   @override
   void initState() {
     super.initState();
@@ -81,13 +89,27 @@ class _DatePickerState extends State<DatePicker> {
 
   Future<void> _selectDate() async {
     final DateTime now = DateTime.now();
-    final DateTime currentDate = DateTime(now.year, now.month, now.day);
+    final DateTime currentDate = _dateOnly(now);
+
+    final DateTime resolvedMinDate = widget.minDate != null
+        ? _dateOnly(widget.minDate!)
+        : (widget.allowPastDates ? DateTime(2000) : currentDate);
+
+    final DateTime firstDate = widget.allowPastDates
+        ? resolvedMinDate
+        : _maxDate(resolvedMinDate, currentDate);
+
+    final DateTime initialDate = () {
+      final candidate = _controller.selectedDate != null
+          ? _dateOnly(_controller.selectedDate!)
+          : firstDate;
+      return candidate.isBefore(firstDate) ? firstDate : candidate;
+    }();
 
     final DateTime? pickedDate = await showDatePicker(
       context: context,
-      initialDate: _controller.selectedDate ?? widget.minDate ?? currentDate,
-      firstDate: widget.minDate ??
-          (widget.allowPastDates ? DateTime(2000) : currentDate),
+      initialDate: initialDate,
+      firstDate: firstDate,
       lastDate: DateTime(2100),
       builder: (context, child) {
         return Theme(
@@ -120,8 +142,7 @@ class _DatePickerState extends State<DatePicker> {
   }
 
   void _formatAndSendDate(DateTime date) {
-    final formattedDate =
-        "${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}";
+    final formattedDate = _formatYmd(date);
 
     if (widget.onSeclectDate != null) {
       widget.onSeclectDate!(formattedDate);
@@ -158,9 +179,7 @@ class _DatePickerState extends State<DatePicker> {
                     fit: BoxFit.scaleDown,
                     alignment: Alignment.centerLeft,
                     child: Text(
-                      date != null
-                          ? '${date.year}/${date.month}/${date.day}'
-                          : "${widget.text}",
+                      date != null ? _formatYmd(date) : "${widget.text}",
                       style: TextStyle(fontSize: widget.fontSize),
                       maxLines: 1,
                     ),

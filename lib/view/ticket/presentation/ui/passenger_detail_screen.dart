@@ -3,6 +3,7 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:keyboard_actions/keyboard_actions.dart';
 
@@ -170,7 +171,7 @@ class PassengerDetailScreen extends GetView<PassengerDetailController> {
         if (isFirstSection) ...[
           Obx(() =>
               _buildCustomerContactInfo(uistate.showPhoneError.value, title)),
-          _buildNationalitySelector(),
+          // _buildNationalitySelector(),
         ],
         _buildDataListCustomer(seats),
         const SizedBox(height: 10),
@@ -318,6 +319,11 @@ class PassengerDetailScreen extends GetView<PassengerDetailController> {
               controller: state.phoneController,
               focusNode: controller.phoneFocus, // attach the focus
               keyboardType: TextInputType.number,
+              inputFormatters: [
+                FilteringTextInputFormatter.digitsOnly,
+                LengthLimitingTextInputFormatter(10),
+                const _LeadingZeroPhoneFormatter(),
+              ],
               textInputAction: TextInputAction.done,
               onFieldSubmitted: (_) => FocusScope.of(Get.context!).unfocus(),
               decoration: InputDecoration(
@@ -363,7 +369,7 @@ class PassengerDetailScreen extends GetView<PassengerDetailController> {
             return const Padding(
               padding: EdgeInsets.only(top: 6),
               child: Text(
-                '* សូមបំពេញលេខទូរស័ព្ទ',
+                'លេខទូរស័ព្ទត្រូវមានចន្លោះពី 8 ដល់ 10 ខ្ទង់',
                 style: TextStyle(color: Colors.red, fontSize: 12),
               ),
             );
@@ -387,7 +393,8 @@ class PassengerDetailScreen extends GetView<PassengerDetailController> {
               children: [
                 TextSpan(text: 'សញ្ជាតិ ', style: TextStyle(fontSize: 15)),
                 TextSpan(
-                    text: '*', style: TextStyle(color: AppColors.redColor)),
+                    text: '*',
+                    style: TextStyle(color: Color.fromARGB(255, 113, 78, 78))),
               ],
             ),
           ),
@@ -422,7 +429,7 @@ class PassengerDetailScreen extends GetView<PassengerDetailController> {
               hasError: hasError,
               errorText: hasError ? "* សូមជ្រើសរើសសញ្ជាតិ" : null,
               isEnabled: nationalList.isNotEmpty,
-              isLoading: false,
+              isLoading: state.isSelectingNationality.value,
               onSelected: (index) {
                 final selectedItem = nationalList[index];
                 state.selectedNationalityId.value = selectedItem.id ?? 0;
@@ -613,6 +620,37 @@ class PassengerDetailScreen extends GetView<PassengerDetailController> {
           ),
         ),
       ),
+    );
+  }
+}
+
+class _LeadingZeroPhoneFormatter extends TextInputFormatter {
+  const _LeadingZeroPhoneFormatter();
+
+  @override
+  TextEditingValue formatEditUpdate(
+    TextEditingValue oldValue,
+    TextEditingValue newValue,
+  ) {
+    final text = newValue.text;
+    if (text.isEmpty) return newValue;
+    if (text.startsWith('0')) return newValue;
+
+    String updated;
+    if (text.length == 1) {
+      updated = '0';
+    } else {
+      updated = '0${text.substring(1)}';
+    }
+
+    if (updated.length > 10) {
+      updated = updated.substring(0, 10);
+    }
+
+    return TextEditingValue(
+      text: updated,
+      selection: TextSelection.collapsed(offset: updated.length),
+      composing: TextRange.empty,
     );
   }
 }

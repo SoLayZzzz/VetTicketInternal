@@ -7,76 +7,18 @@ import 'package:vet_internal_ticket/theme/app_colors.dart';
 import 'package:vet_internal_ticket/utils/dimension.dart';
 import 'package:vet_internal_ticket/view/ticket/data/model/response/schedule_response.dart';
 import 'package:vet_internal_ticket/view/ticket/presentation/controller/schedule_controller.dart';
+import 'package:vet_internal_ticket/view/ticket/presentation/controller/schedule_detail_controller.dart';
 
-class ScheduleDetailScreen extends StatefulWidget {
+class ScheduleDetailScreen extends GetView<ScheduleDetailController> {
   const ScheduleDetailScreen({super.key});
 
   @override
-  State<ScheduleDetailScreen> createState() => _ScheduleDetailScreenState();
-}
-
-class _ScheduleDetailScreenState extends State<ScheduleDetailScreen> {
-  late final PageController _pageController;
-  int _currentPage = 0;
-
-  final List<String> _images = const [
-    'assets/images/img_vet_express.png',
-    'assets/images/img_vet_ticket.png',
-    'assets/images/img_vet_exp.png',
-  ];
-
-  @override
-  void initState() {
-    super.initState();
-    _pageController = PageController();
-  }
-
-  @override
-  void dispose() {
-    _pageController.dispose();
-    super.dispose();
-  }
-
-  @override
   Widget build(BuildContext context) {
-    final args = Get.arguments;
-    ScheduleListResponse? schedule;
-    if (args is Map) {
-      final s = args['schedule'];
-      if (s is ScheduleListResponse) {
-        schedule = s;
-      }
-    }
-
-    final pickupPoints = (schedule?.boardingPointList ?? [])
-        .map((p) => {
-              'name': _extractPointName(p.name),
-              'time': _extractPointTime(p.name),
-            })
-        .toList();
-
-    final dropoffPoints = (schedule?.dropOffPointList ?? [])
-        .map((p) => {
-              'name': _extractPointName(p.name),
-              'time': _extractPointTime(p.name),
-            })
-        .toList();
-
-    final networkImages = (schedule?.slidePhoto ?? [])
-        .map((e) => e.photo)
-        .whereType<String>()
-        .where((p) => p.trim().isNotEmpty)
-        .toList();
-
-    final images = networkImages.isNotEmpty
-        ? networkImages
-        : (schedule?.transportationPhoto != null &&
-                schedule!.transportationPhoto!.trim().isNotEmpty)
-            ? [schedule.transportationPhoto!.trim()]
-            : _images;
-
-    final canBook =
-        schedule != null && (schedule.id ?? '').toString().isNotEmpty;
+    final ScheduleListResponse? schedule = controller.schedule.value;
+    final pickupPoints = controller.pickupPoints;
+    final dropoffPoints = controller.dropoffPoints;
+    final images = controller.images;
+    final canBook = controller.canBook;
 
     return Scaffold(
       appBar: AppBar(
@@ -89,14 +31,41 @@ class _ScheduleDetailScreenState extends State<ScheduleDetailScreen> {
           onPressed: () => Get.back(),
         ),
         centerTitle: true,
-        title: const Text(
-          'ព័ត៌មានលម្អិត',
-          style: TextStyle(
-            color: AppColors.whiteColor,
-            fontSize: Dimension.fontSize18,
-            fontWeight: FontWeight.w600,
-          ),
-        ),
+        title: Obx(() {
+          try {
+            final scheduleController = Get.find<ScheduleController>();
+            final isReturn =
+                scheduleController.uiState.value.isReturnTrip.value;
+            final from = isReturn
+                ? scheduleController.uiState.value.toName
+                : scheduleController.uiState.value.fromName;
+            final to = isReturn
+                ? scheduleController.uiState.value.fromName
+                : scheduleController.uiState.value.toName;
+            final titleText =
+                (from != null && to != null) ? '$from - $to' : 'ព័ត៌មានលម្អិត';
+
+            return Text(
+              titleText,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: const TextStyle(
+                color: AppColors.whiteColor,
+                fontSize: Dimension.fontSize18,
+                fontWeight: FontWeight.w600,
+              ),
+            );
+          } catch (_) {
+            return const Text(
+              'ព័ត៌មានលម្អិត',
+              style: TextStyle(
+                color: AppColors.whiteColor,
+                fontSize: Dimension.fontSize18,
+                fontWeight: FontWeight.w600,
+              ),
+            );
+          }
+        }),
         backgroundColor: AppColors.primaryColor,
       ),
       body: SafeArea(
@@ -130,11 +99,9 @@ class _ScheduleDetailScreenState extends State<ScheduleDetailScreen> {
                         child: Stack(
                           children: [
                             PageView.builder(
-                              controller: _pageController,
+                              controller: controller.pageController,
                               itemCount: images.length,
-                              onPageChanged: (index) {
-                                setState(() => _currentPage = index);
-                              },
+                              onPageChanged: controller.onPageChanged,
                               itemBuilder: (context, index) {
                                 final image = images[index];
                                 if (image.startsWith('http')) {
@@ -150,7 +117,7 @@ class _ScheduleDetailScreenState extends State<ScheduleDetailScreen> {
                                     },
                                     errorBuilder: (context, error, stackTrace) {
                                       return Image.asset(
-                                        _images.first,
+                                        controller.fallbackImages.first,
                                         fit: BoxFit.cover,
                                       );
                                     },
@@ -192,21 +159,29 @@ class _ScheduleDetailScreenState extends State<ScheduleDetailScreen> {
                                         mainAxisSize: MainAxisSize.min,
                                         children: List.generate(
                                           images.length,
-                                          (index) => AnimatedContainer(
-                                            duration: const Duration(
-                                                milliseconds: 200),
-                                            margin: const EdgeInsets.symmetric(
-                                                horizontal: 4),
-                                            height: 8,
-                                            width:
-                                                _currentPage == index ? 18 : 8,
-                                            decoration: BoxDecoration(
-                                              color: _currentPage == index
-                                                  ? AppColors.primaryColor
-                                                  : Colors.white
-                                                      .withOpacity(0.9),
-                                              borderRadius:
-                                                  BorderRadius.circular(20),
+                                          (index) => Obx(
+                                            () => AnimatedContainer(
+                                              duration: const Duration(
+                                                  milliseconds: 200),
+                                              margin:
+                                                  const EdgeInsets.symmetric(
+                                                      horizontal: 4),
+                                              height: 8,
+                                              width: controller
+                                                          .currentPage.value ==
+                                                      index
+                                                  ? 18
+                                                  : 8,
+                                              decoration: BoxDecoration(
+                                                color: controller.currentPage
+                                                            .value ==
+                                                        index
+                                                    ? AppColors.primaryColor
+                                                    : Colors.white
+                                                        .withOpacity(0.9),
+                                                borderRadius:
+                                                    BorderRadius.circular(20),
+                                              ),
                                             ),
                                           ),
                                         ),
@@ -378,13 +353,11 @@ class _AmenitiesList extends StatelessWidget {
             Text(
               name.isEmpty ? '-' : name,
               textAlign: TextAlign.center,
-              // maxLines: 2,
               overflow: TextOverflow.ellipsis,
               style: const TextStyle(
                 fontSize: 12,
                 color: AppColors.mainTextColor,
                 fontWeight: FontWeight.w500,
-                // height: 1.2,
               ),
             ),
           ],
@@ -392,42 +365,6 @@ class _AmenitiesList extends StatelessWidget {
       },
     );
   }
-}
-
-String _extractPointName(String? value) {
-  if (value == null) return '';
-  final trimmed = value.trim();
-  if (trimmed.isEmpty) return '';
-
-  final parts = trimmed.split(' ');
-  if (parts.isEmpty) return trimmed;
-
-  final last = parts.last;
-  if (_isTime(last)) {
-    return parts.sublist(0, parts.length - 1).join(' ');
-  }
-
-  return trimmed;
-}
-
-String _extractPointTime(String? value) {
-  if (value == null) return '';
-  final trimmed = value.trim();
-  if (trimmed.isEmpty) return '';
-
-  final parts = trimmed.split(' ');
-  if (parts.isEmpty) return '';
-
-  final last = parts.last;
-  return _isTime(last) ? last : '';
-}
-
-bool _isTime(String value) {
-  final v = value.trim();
-  if (v.isEmpty) return false;
-  final parts = v.split(':');
-  if (parts.length < 2) return false;
-  return int.tryParse(parts[0]) != null;
 }
 
 class _ImageSkeleton extends StatefulWidget {

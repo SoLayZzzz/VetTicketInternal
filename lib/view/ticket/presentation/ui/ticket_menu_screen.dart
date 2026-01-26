@@ -237,7 +237,7 @@ class TicketMenuScreen extends GetView<TicketMenuController> {
                   borderWidth: 1,
                   borderColor: Colors.black.withAlpha(400),
                   text: "ថ្ងៃមកវិញ",
-                  minDate: goDate?.add(const Duration(days: 1)),
+                  minDate: goDate,
                   backgroundColor: AppColors.whiteColor,
                   selectedDateColor: AppColors.primaryColor,
                   onSeclectDate: (formattedDate) {

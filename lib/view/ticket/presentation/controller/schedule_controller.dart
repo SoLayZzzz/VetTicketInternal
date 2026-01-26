@@ -291,10 +291,9 @@ class ScheduleController extends StateController<ScheduleState> {
 
     // Earliest selectable date:
     // - For GO: today
-    // - For RETURN: must be > GO date
-    final first = uiState.value.isReturnTrip.value
-        ? parseGoDate().add(const Duration(days: 1))
-        : DateTime.now();
+    // - For RETURN: must be >= GO date
+    final first =
+        uiState.value.isReturnTrip.value ? parseGoDate() : DateTime.now();
 
     final DateTime? pickedDate = await showDatePicker(
       context: context,
@@ -335,16 +334,14 @@ class ScheduleController extends StateController<ScheduleState> {
     booking.goSelectedSeats.clear();
 
     if (hadReturnDate) {
-      // Round-trip: keep return date but make sure it is > go date
+      // Round-trip: keep return date but make sure it is >= go date
       try {
         final ret = DateTime.parse(uiState.value.selectDateBack.value);
-        if (!ret.isAfter(newDate)) {
-          uiState.value.selectDateBack.value =
-              _formatDate(newDate.add(const Duration(days: 1)));
+        if (ret.isBefore(newDate)) {
+          uiState.value.selectDateBack.value = _formatDate(newDate);
         }
       } catch (_) {
-        uiState.value.selectDateBack.value =
-            _formatDate(newDate.add(const Duration(days: 1)));
+        uiState.value.selectDateBack.value = _formatDate(newDate);
       }
 
       booking.returnScheduleId = null;
@@ -362,8 +359,7 @@ class ScheduleController extends StateController<ScheduleState> {
 
   void updateReturnDate(DateTime newDate) {
     final go = parseGoDate();
-    final safe =
-        newDate.isAfter(go) ? newDate : go.add(const Duration(days: 1));
+    final safe = newDate.isBefore(go) ? go : newDate;
 
     final formatted = _formatDate(safe);
     uiState.value.selectDateBack.value = formatted;

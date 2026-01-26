@@ -215,13 +215,15 @@ class ScheduleListScreen extends GetView<ScheduleController> {
             ),
             child: ScheduleList(
               textColor: AppColors.primaryColor,
+              transportationType: data.transportationType ?? "",
               startTime: data.formattedDeparture.toString(),
               middleTime: data.formattedduration.toString(),
               endTime: data.formattedarrival.toString(),
               seatAvailable: data.seatAvailable ?? 0,
               totalSeat: data.totalSeat ?? 0,
               price: data.price?.toDouble(),
-              agencyPrice: data.agencyPrice?.toDouble(),
+              // agencyPrice: data.agencyPrice?.toDouble(),
+              agencyPrice: data.companyPrice?.toDouble(),
               detailArguments: {
                 'schedule': data,
               },

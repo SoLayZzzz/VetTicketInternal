@@ -2,34 +2,34 @@
 enum BluetoothState {
   /// Bluetooth is not available on this device
   UNKNOWN,
-  
+
   /// Bluetooth is not available on this device
   UNAVAILABLE,
-  
+
   /// Bluetooth is not enabled and needs to be turned on
   TURNING_ON,
-  
+
   /// Bluetooth is on and ready for use
   ON,
-  
+
   /// Bluetooth is currently turning off
   TURNING_OFF,
-  
+
   /// Bluetooth is currently turning on
   OFF,
-  
+
   /// The device is not connected to any Bluetooth devices
   DISCONNECTED,
-  
+
   /// The device is in the process of connecting to a Bluetooth device
   CONNECTING,
-  
+
   /// The device is connected to a Bluetooth device
   CONNECTED,
-  
+
   /// The device is disconnecting from a Bluetooth device
   DISCONNECTING,
-  
+
   /// An error occurred during a Bluetooth operation
   ERROR,
 }
@@ -62,18 +62,19 @@ extension BluetoothStateExtension on BluetoothState {
         return 'Error';
     }
   }
-  
+
   /// Returns true if the state indicates an active connection
   bool get isConnected => this == BluetoothState.CONNECTED;
-  
+
   /// Returns true if the state indicates a connection in progress
   bool get isConnecting => this == BluetoothState.CONNECTING;
-  
+
   /// Returns true if the state indicates a disconnection in progress
   bool get isDisconnecting => this == BluetoothState.DISCONNECTING;
-  
+
   /// Returns true if the state indicates not connected
-  bool get isDisconnected => this == BluetoothState.DISCONNECTED || 
-                           this == BluetoothState.OFF ||
-                           this == BluetoothState.UNAVAILABLE;
+  bool get isDisconnected =>
+      this == BluetoothState.DISCONNECTED ||
+      this == BluetoothState.OFF ||
+      this == BluetoothState.UNAVAILABLE;
 }

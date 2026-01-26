@@ -27,6 +27,7 @@ import 'package:vet_internal_ticket/view/report/presentation/ui/report_screen.da
 import 'package:vet_internal_ticket/splash_screen.dart';
 import 'package:vet_internal_ticket/view/ticket/presentation/binding/passsenger_detail_binding.dart';
 import 'package:vet_internal_ticket/view/ticket/presentation/binding/schedule_binding.dart';
+import 'package:vet_internal_ticket/view/ticket/presentation/binding/schedule_detail_binding.dart';
 import 'package:vet_internal_ticket/view/ticket/presentation/binding/seat_binding.dart';
 import 'package:vet_internal_ticket/view/ticket/presentation/binding/ticket_menu_binding.dart';
 import 'package:vet_internal_ticket/view/ticket/presentation/ui/passenger_detail_screen.dart';
@@ -142,6 +143,7 @@ final getPages = [
   GetPage(
     name: AppRoutes.schedule_detail_screen,
     page: () => const ScheduleDetailScreen(),
+    binding: ScheduleDetailBinding(),
   ),
   // ----------------
   GetPage(

@@ -3,10 +3,23 @@ import 'package:get/get.dart';
 import 'package:vet_internal_ticket/app_route.dart';
 import 'package:vet_internal_ticket/components/appbar.dart';
 import 'package:vet_internal_ticket/theme/app_colors.dart';
+import 'package:vet_internal_ticket/view/home/data/model/response/booking_history_list_response.dart';
 import 'package:vet_internal_ticket/view/home/presentaion/controller/car_history_controller.dart';
 
 class CarHistoryScreen extends StatelessWidget {
   const CarHistoryScreen({super.key});
+
+  String _routeText(BookingHistoryItem item) {
+    final from = item.destinationFrom ?? '';
+    final to = item.destinationTo ?? '';
+    return '$from - $to';
+  }
+
+  String _dateText(BookingHistoryItem item) {
+    final departure = (item.departure ?? '').split('.').first;
+    final date = item.travelDate ?? item.bookingDate ?? '';
+    return departure.isNotEmpty ? '$date ($departure)' : date;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -79,7 +92,7 @@ class CarHistoryScreen extends StatelessWidget {
                       const SizedBox(width: 10),
                       Expanded(
                         child: Text(
-                          item['route'] ?? '',
+                          _routeText(item),
                           style: const TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.w700,
@@ -98,7 +111,7 @@ class CarHistoryScreen extends StatelessWidget {
                               size: 18, color: Colors.grey),
                           const SizedBox(width: 8),
                           Text(
-                            item['code'] ?? '',
+                            item.code ?? '',
                             style: const TextStyle(
                               fontSize: 14,
                               color: Colors.grey,
@@ -114,7 +127,7 @@ class CarHistoryScreen extends StatelessWidget {
                               size: 18, color: Colors.grey),
                           const SizedBox(width: 8),
                           Text(
-                            item['date'] ?? '',
+                            _dateText(item),
                             style: const TextStyle(
                               fontSize: 14,
                               color: Colors.grey,
@@ -133,7 +146,7 @@ class CarHistoryScreen extends StatelessWidget {
                       const SizedBox(width: 8),
                       Expanded(
                         child: Text(
-                          item['vehicle'] ?? '',
+                          item.transportationType ?? '',
                           style: const TextStyle(
                             fontSize: 14,
                             color: Colors.grey,
@@ -145,7 +158,7 @@ class CarHistoryScreen extends StatelessWidget {
                           size: 18, color: Colors.grey),
                       const SizedBox(width: 8),
                       Text(
-                        '${item['totalSeat'] ?? item['pax'] ?? '0'} pax',
+                        '${(item.totalSeat ?? 0).toString()} pax',
                         style: const TextStyle(
                           fontSize: 14,
                           color: Colors.grey,
@@ -162,7 +175,7 @@ class CarHistoryScreen extends StatelessWidget {
                         onTap: () => Get.toNamed(
                           AppRoutes.car_history_detail_screen,
                           arguments: {
-                            'id': int.tryParse(item['id'] ?? ''),
+                            'id': item.id,
                           },
                         ),
                         child: const Row(

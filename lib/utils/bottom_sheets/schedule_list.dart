@@ -23,9 +23,11 @@ class ScheduleList extends StatefulWidget {
     this.isButtonEnabled = true,
     this.textColor,
     this.detailArguments,
+    this.transportationType = "",
   });
 
   final String startTime, middleTime, endTime;
+  final String transportationType;
   final VoidCallback? onTap;
   final int seatAvailable;
   final int totalSeat;
@@ -45,9 +47,8 @@ class ScheduleList extends StatefulWidget {
 class _ScheduleListState extends State<ScheduleList> {
   @override
   Widget build(BuildContext context) {
-    final double displayOldPrice = (widget.price ?? 0).toDouble();
-    final double displayNewPrice =
-        (widget.agencyPrice ?? widget.price ?? 0).toDouble();
+    final double displayOldPrice = (widget.agencyPrice ?? 0).toDouble();
+    final double displayNewPrice = widget.price ?? 0;
     return Container(
       width: double.infinity,
       decoration: BoxDecoration(
@@ -106,7 +107,7 @@ class _ScheduleListState extends State<ScheduleList> {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       const Text14(text: "ចំនួនកៅអីនៅសល់"),
-                      Text14(text: "Luxury Coaster (${widget.totalSeat})"),
+                      Text14(text: widget.transportationType)
                     ],
                   ),
                   Row(
@@ -218,28 +219,23 @@ class _ScheduleListState extends State<ScheduleList> {
                     ],
                   ),
                 ),
-                Expanded(
-                  child: Align(
-                    alignment: Alignment.centerRight,
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.end,
-                      children: [
-                        Text14(
-                          text: '\$${displayOldPrice.toStringAsFixed(2)}',
-                          translate: false,
-                          color: Colors.grey,
-                          textDecoration: TextDecoration.lineThrough,
-                        ),
-                        const SizedBox(height: 4),
-                        Text18(
-                          text: '\$${displayNewPrice.toStringAsFixed(2)}',
-                          translate: false,
-                          color: AppColors.primaryColor,
-                          fontWeight: FontWeight.w700,
-                        ),
-                      ],
+                const Spacer(),
+                Row(
+                  children: [
+                    Text14(
+                      text: '\$${displayOldPrice.toStringAsFixed(2)}',
+                      translate: false,
+                      color: Colors.grey,
+                      textDecoration: TextDecoration.lineThrough,
                     ),
-                  ),
+                    const SizedBox(width: 5),
+                    Text18(
+                      text: '\$${displayNewPrice.toStringAsFixed(2)}',
+                      translate: false,
+                      color: AppColors.primaryColor,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ],
                 ),
               ],
             ),

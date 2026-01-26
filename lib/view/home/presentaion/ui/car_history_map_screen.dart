@@ -19,18 +19,32 @@ class _CarHistoryMapScreenState extends State<CarHistoryMapScreen> {
   // late final String _label;
   static const double _initialZoom = 13.5;
 
+  late final Object _zoomInHeroTag;
+  late final Object _zoomOutHeroTag;
+
+  double _asDouble(dynamic v, double fallback) {
+    if (v == null) return fallback;
+    if (v is num) return v.toDouble();
+    final parsed = double.tryParse(v.toString());
+    return parsed ?? fallback;
+  }
+
   @override
   void initState() {
     super.initState();
 
+    _zoomInHeroTag = Object();
+    _zoomOutHeroTag = Object();
+
     final args =
         (Get.arguments is Map) ? (Get.arguments as Map) : <String, dynamic>{};
-    final lat = (args['lat'] is num)
-        ? (args['lat'] as num).toDouble()
-        : _defaultPosition.latitude;
-    final lng = (args['lng'] is num)
-        ? (args['lng'] as num).toDouble()
-        : _defaultPosition.longitude;
+
+    var lat = _asDouble(args['lat'], _defaultPosition.latitude);
+    var lng = _asDouble(args['lng'], _defaultPosition.longitude);
+    if (!lat.isFinite || !lng.isFinite) {
+      lat = _defaultPosition.latitude;
+      lng = _defaultPosition.longitude;
+    }
     // _label = (args['label']?.toString().isNotEmpty ?? false)
     //     ? args['label'].toString()
     //     : 'VET Station';
@@ -82,7 +96,7 @@ class _CarHistoryMapScreenState extends State<CarHistoryMapScreen> {
               mainAxisSize: MainAxisSize.min,
               children: [
                 FloatingActionButton(
-                  heroTag: 'map-zoom-in',
+                  heroTag: _zoomInHeroTag,
                   mini: true,
                   onPressed: () {
                     _googleMapController?.animateCamera(
@@ -93,7 +107,7 @@ class _CarHistoryMapScreenState extends State<CarHistoryMapScreen> {
                 ),
                 const SizedBox(height: 8),
                 FloatingActionButton(
-                  heroTag: 'map-zoom-out',
+                  heroTag: _zoomOutHeroTag,
                   mini: true,
                   onPressed: () {
                     _googleMapController?.animateCamera(

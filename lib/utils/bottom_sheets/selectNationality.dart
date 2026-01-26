@@ -70,8 +70,6 @@ class _SelectNationalityState extends State<SelectNationality> {
     if (!widget.isEnabled || widget.isLoading) return;
 
     if (widget.showChooseScreen) {
-      if (widget.nationalityList.isEmpty) return;
-
       final result = await showModalBottomSheet<Map<String, dynamic>>(
         barrierColor: Colors.transparent,
         backgroundColor: Colors.transparent,

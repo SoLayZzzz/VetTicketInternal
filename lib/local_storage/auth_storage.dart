@@ -31,7 +31,7 @@ class AuthStorage {
     return _box.get(_keyRefreshToken);
   }
 
-  // Delete
+  // =============== Delete Token ================
   Future<void> deleteToken() async {
     await _box.delete(_keyAccessToken);
     await _box.delete(_keyRefreshToken);

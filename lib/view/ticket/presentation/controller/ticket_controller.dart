@@ -175,8 +175,8 @@ class TicketMenuController extends StateController<TicketState> {
       final back = _tryParseYmd(state.selectDateBack);
       if (go == null) return;
 
-      if (back == null || !back.isAfter(go)) {
-        state.selectDateBack = _formatYmd(go.add(const Duration(days: 1)));
+      if (back == null || back.isBefore(go)) {
+        state.selectDateBack = _formatYmd(go);
         state.showDateBackError = false;
       }
     });
@@ -189,9 +189,8 @@ class TicketMenuController extends StateController<TicketState> {
       final back = _tryParseYmd(date);
 
       if (go != null) {
-        state.selectDateBack = _formatYmd((back != null && back.isAfter(go))
-            ? back
-            : go.add(const Duration(days: 1)));
+        state.selectDateBack =
+            _formatYmd((back != null && !back.isBefore(go)) ? back : go);
       } else {
         state.selectDateBack = date;
       }

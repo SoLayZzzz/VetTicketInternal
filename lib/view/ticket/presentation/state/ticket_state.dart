@@ -69,7 +69,7 @@ class TicketState {
       try {
         final go = DateTime.parse(selectDate);
         final back = DateTime.parse(selectDateBack);
-        if (!back.isAfter(go)) {
+        if (back.isBefore(go)) {
           showDateBackError = true;
         }
       } catch (_) {
