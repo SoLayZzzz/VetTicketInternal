@@ -18,6 +18,7 @@ class TripBookingData {
   String? goDate;
   String? goSeatPrice;
   List<Map<String, String>> goSelectedSeats = [];
+  int goMarkup = 0;
 
   // Return Trip
   String? returnScheduleId;
@@ -28,6 +29,7 @@ class TripBookingData {
   String? returnDate;
   String? returnSeatPrice;
   List<Map<String, String>> returnSelectedSeats = [];
+  int returnMarkup = 0;
 
   // Common
   String? selectType;
@@ -50,8 +52,9 @@ class TripBookingData {
     final returnPrice = double.tryParse(returnSeatPrice ?? '0.0') ?? 0.0;
     final goTotal = goPrice * goSelectedSeats.length;
     final returnTotal = returnPrice * returnSelectedSeats.length;
-    final totalSeats = goSelectedSeats.length + returnSelectedSeats.length;
-    totalPrice = goTotal + returnTotal + (markup * totalSeats);
+    final goMarkupTotal = goMarkup * goSelectedSeats.length;
+    final returnMarkupTotal = returnMarkup * returnSelectedSeats.length;
+    totalPrice = goTotal + returnTotal + goMarkupTotal + returnMarkupTotal;
   }
 
   void clear() {
@@ -65,6 +68,8 @@ class TripBookingData {
     totalSeat = null;
     totalPrice = 0;
     markup = 0;
+    goMarkup = 0;
+    returnMarkup = 0;
     isSelectingReturnTripNow.value = false;
   }
 
@@ -75,6 +80,7 @@ class TripBookingData {
     returnDate = null;
     returnSeatPrice = null;
     returnSelectedSeats.clear();
+    returnMarkup = 0;
     isSelectingReturnTripNow.value = false;
   }
 
@@ -85,6 +91,7 @@ class TripBookingData {
       print(
           "Return: $returnFromName → $returnToName Date: $returnDate Seats: $returnSelectedSeats");
     }
-    print("TotalPrice: $totalPrice, Markup: $markup");
+    print(
+        "TotalPrice: $totalPrice, GoMarkup: $goMarkup, ReturnMarkup: $returnMarkup, Markup(legacy): $markup");
   }
 }

@@ -9,6 +9,7 @@ import 'package:vet_internal_ticket/view/ticket/data/model/request/destination_t
 import 'package:vet_internal_ticket/view/ticket/data/model/response/destination_model.dart';
 import 'package:vet_internal_ticket/booking_service.dart';
 import 'package:vet_internal_ticket/view/ticket/domain/uscase/ticket_usecase.dart';
+import 'package:vet_internal_ticket/view/ticket/presentation/controller/schedule_controller.dart';
 import 'package:vet_internal_ticket/view/ticket/presentation/state/ticket_state.dart';
 
 class TicketMenuController extends StateController<TicketState> {
@@ -185,6 +186,14 @@ class TicketMenuController extends StateController<TicketState> {
   void updateSelectedReturnDate(String date) {
     uiState.update((state) {
       if (state == null) return;
+      if (date.trim().isEmpty) {
+        state.selectDateBack = "";
+        state.showDateBackError = false;
+        try {
+          Get.find<BookingService>().bookingData.resetReturnSelection();
+        } catch (_) {}
+        return;
+      }
       final go = _tryParseYmd(state.selectDate);
       final back = _tryParseYmd(date);
 
@@ -209,6 +218,9 @@ class TicketMenuController extends StateController<TicketState> {
       });
       return;
     }
+    try {
+      Get.delete<ScheduleController>(force: true);
+    } catch (_) {}
 
     final result = await Get.toNamed(
       AppRoutes.schedule_list_screen,

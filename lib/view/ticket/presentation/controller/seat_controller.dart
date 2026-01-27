@@ -144,6 +144,7 @@ class SeatController extends StateController<SeatState> {
       booking.goDate = state.date;
       booking.goSelectedSeats = selectedSeats;
       booking.goSeatPrice = state.seatPrice;
+      booking.goMarkup = state.markup?.value ?? 0;
 
       // If there is a return date, signal Schedule to flip
       if ((state.dateBack ?? '').isNotEmpty) {
@@ -165,15 +166,13 @@ class SeatController extends StateController<SeatState> {
       booking.returnDate = state.date;
       booking.returnSelectedSeats = selectedSeats;
       booking.returnSeatPrice = state.seatPrice;
+      booking.returnMarkup = state.markup?.value ?? 0;
     }
 
     booking.selectType = state.selectType;
-    final currentMarkup = state.markup?.value ?? 0;
-    if (!state.isReturnTrip.value) {
-      booking.markup = currentMarkup;
-    } else {
-      booking.markup = booking.markup + currentMarkup;
-    }
+    // Keep legacy `booking.markup` as the currently active per-seat markup (used by UI/logging),
+    // but do NOT sum it across legs.
+    booking.markup = state.markup?.value ?? booking.markup;
     booking.calculateTotalSeat();
     booking.calculateTotalPrice();
     booking.debugPrint();
