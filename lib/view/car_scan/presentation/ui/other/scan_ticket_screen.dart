@@ -25,41 +25,39 @@ class ScanTicketScreen extends GetView<ScanTicketController> {
       ),
       bottomNavigationBar: _buildBottomnavigationBar(),
       body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(Dimension.padding16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Obx(() =>
-              _buildSelectBus(),
-              // ),
-              const SizedBox(height: 20),
-              Obx(() {
-                if (controller.uiState.value.selectedBus.value == null) {
-                  return SizedBox();
-                }
+        child: Obx(() {
+          if (controller.uiState.value.isLoading.value) {
+            return const Center(child: CircularProgressIndicator());
+          }
 
-                if (controller.uiState.value.isLoading.value) {
-                  return const Center(
-                    child: null,
+          return Padding(
+            padding: const EdgeInsets.all(Dimension.padding16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                _buildSelectBus(),
+                const SizedBox(height: 20),
+                Obx(() {
+                  if (controller.uiState.value.selectedBus.value == null) {
+                    return const SizedBox();
+                  }
+
+                  return Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        _buildScanButton(),
+                        _buildInformation(),
+                        const SizedBox(height: 10),
+                        Expanded(child: _buildListSeat()),
+                      ],
+                    ),
                   );
-                }
-
-                return Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      _buildScanButton(),
-                      _buildInformation(),
-                      const SizedBox(height: 10),
-                      Expanded(child: _buildListSeat()),
-                    ],
-                  ),
-                );
-              })
-            ],
-          ),
-        ),
+                })
+              ],
+            ),
+          );
+        }),
       ),
     );
   }
@@ -89,12 +87,12 @@ class ScanTicketScreen extends GetView<ScanTicketController> {
   _buildSelectBus() {
     return Obx(() {
       if (controller.uiState.value.isLoading.value) {
-        return const Center(child: CircularProgressIndicator());
+        return const SizedBox.shrink();
       }
 
       final busModel = controller.uiState.value.busList.value;
       bool hasData = false;
-      List<String> buses = ["Hello", "Hi"];
+      List<String> buses = ["Car 1", "Car 2"];
 
       if (busModel != null &&
           busModel.header?.statusCode == 200 &&
@@ -113,15 +111,12 @@ class ScanTicketScreen extends GetView<ScanTicketController> {
         suffixIcon: AppIcons.IC_search,
         assetImage: const AssetImage(AppIcons.IC_search),
         hasData: hasData,
+        backgroundColor: Colors.white,
         showChooseScreen: true,
         borderRadius: BorderRadius.circular(5),
         borderColor: AppColors.borderColor,
         textStyle: const TextStyle(color: AppColors.textColor),
         text: controller.uiState.value.selectedBus.value,
-        // onSelected: (index) {
-        //   final selected = buses[index];
-        //   controller.selectBus(selected);
-        // },
         onSelected: (index) {
           final selected = buses[index];
           controller.selectBus(selected);

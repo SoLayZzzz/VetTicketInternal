@@ -17,30 +17,115 @@ import 'package:vet_internal_ticket/view/car_scan/presentation/state/scan_state.
 class ScanTicketController extends StateController<ScanState> {
   final ScanUscase scanUscase;
   ScanTicketController(this.scanUscase);
+
+  bool _isStartingQr = false;
+  bool _isStartingBarCode = false;
+
+  MobileScannerController _createQrController() {
+    return MobileScannerController(autoStart: true);
+  }
+
+  MobileScannerController _createBarCodeController() {
+    return MobileScannerController(
+      autoStart: true,
+      formats: [
+        BarcodeFormat.code128,
+        BarcodeFormat.code39,
+        BarcodeFormat.code93,
+        BarcodeFormat.ean13,
+        BarcodeFormat.ean8,
+        BarcodeFormat.upcA,
+        BarcodeFormat.upcE,
+        BarcodeFormat.itf,
+      ],
+    );
+  }
+
   @override
   ScanState onInitUiState() => ScanState();
 
   @override
   void onInit() {
     super.onInit();
-    // Initialize scanner controllers only once
-    uiState.value.controllerQr.value = MobileScannerController();
-    uiState.value.controllerBarCode.value = MobileScannerController();
+    final oldQrController = uiState.value.controllerQr.value;
+    final oldBarCodeController = uiState.value.controllerBarCode.value;
+    try {
+      oldQrController.stop();
+    } catch (_) {}
+    try {
+      oldQrController.dispose();
+    } catch (_) {}
+    try {
+      oldBarCodeController.stop();
+    } catch (_) {}
+    try {
+      oldBarCodeController.dispose();
+    } catch (_) {}
+
+    uiState.value.controllerQr.value = _createQrController();
+    uiState.value.controllerBarCode.value = _createBarCodeController();
     getBusList();
   }
 
   @override
   void onClose() {
-    // ✅ Just stop the scanner instead of disposing
-    uiState.value.controllerQr.value.stop();
-    uiState.value.controllerBarCode.value.stop();
+    try {
+      uiState.value.controllerQr.value.stop();
+    } catch (_) {}
+    try {
+      uiState.value.controllerQr.value.dispose();
+    } catch (_) {}
+    try {
+      uiState.value.controllerBarCode.value.stop();
+    } catch (_) {}
+    try {
+      uiState.value.controllerBarCode.value.dispose();
+    } catch (_) {}
     super.onClose();
   }
 
   void reInitScannerControllers() {
     // ✅ Call this if you want fresh controllers (optional)
-    uiState.value.controllerQr.value = MobileScannerController();
-    uiState.value.controllerBarCode.value = MobileScannerController();
+    try {
+      uiState.value.controllerQr.value.stop();
+    } catch (_) {}
+    try {
+      uiState.value.controllerQr.value.dispose();
+    } catch (_) {}
+    try {
+      uiState.value.controllerBarCode.value.stop();
+    } catch (_) {}
+    try {
+      uiState.value.controllerBarCode.value.dispose();
+    } catch (_) {}
+    uiState.value.controllerQr.value = _createQrController();
+    uiState.value.controllerBarCode.value = _createBarCodeController();
+  }
+
+  Future<void> startQrScanner() async {
+    if (isClosed) return;
+    if (_isStartingQr) return;
+    _isStartingQr = true;
+    try {
+      await uiState.value.controllerQr.value.start();
+    } catch (_) {
+      // Ignore (can happen if start() is called while already starting)
+    } finally {
+      _isStartingQr = false;
+    }
+  }
+
+  Future<void> startBarCodeScanner() async {
+    if (isClosed) return;
+    if (_isStartingBarCode) return;
+    _isStartingBarCode = true;
+    try {
+      await uiState.value.controllerBarCode.value.start();
+    } catch (_) {
+      // Ignore (can happen if start() is called while already starting)
+    } finally {
+      _isStartingBarCode = false;
+    }
   }
 
   void selectBus(String value) async {
@@ -76,8 +161,11 @@ class ScanTicketController extends StateController<ScanState> {
     final barcode = capture.barcodes.firstOrNull;
     if (barcode == null || barcode.rawValue == null) return;
 
+    final ctx = Get.context;
+    if (ctx == null) return;
+
     // ✅ Define the scan box zone (same as UI)
-    final screenSize = MediaQuery.of(Get.context!).size;
+    final screenSize = MediaQuery.of(ctx).size;
     const scanBoxSize = 300.0;
     final scanBoxCenter = Offset(screenSize.width / 2, screenSize.height / 2.8);
     final scanRect = Rect.fromCenter(
@@ -192,8 +280,9 @@ class ScanTicketController extends StateController<ScanState> {
 
   void restartScanner() {
     Future.delayed(const Duration(milliseconds: 500), () {
+      if (isClosed) return;
       uiState.value.scannedData.value = '';
-      uiState.value.controllerQr.value.start();
+      startQrScanner();
     });
   }
 
@@ -209,7 +298,7 @@ class ScanTicketController extends StateController<ScanState> {
 
   void resetScanner() {
     uiState.value.scannedData.value = null;
-    uiState.value.controllerQr.value.start();
+    startQrScanner();
   }
 
   // ===================================================================
@@ -219,8 +308,11 @@ class ScanTicketController extends StateController<ScanState> {
     final barcode = capture.barcodes.firstOrNull;
     if (barcode == null || barcode.rawValue == null) return;
 
+    final ctx = Get.context;
+    if (ctx == null) return;
+
     // ✅ Define the scan box zone (same as UI)
-    final screenSize = MediaQuery.of(Get.context!).size;
+    final screenSize = MediaQuery.of(ctx).size;
     const scanBoxSize = 300.0;
     final scanBoxCenter = Offset(screenSize.width / 2, screenSize.height / 2.8);
     final scanRect = Rect.fromCenter(
@@ -295,8 +387,9 @@ class ScanTicketController extends StateController<ScanState> {
 
   void restartScannerBarCode() {
     Future.delayed(const Duration(milliseconds: 500), () {
+      if (isClosed) return;
       uiState.value.scannedData.value = '';
-      uiState.value.controllerQr.value.start();
+      startBarCodeScanner();
     });
   }
 

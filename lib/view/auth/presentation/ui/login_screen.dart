@@ -31,7 +31,7 @@ class LoginScreen extends GetView<AuthController> {
                   _buildLogo(),
                   _buildUserName(context),
                   _buildPassword(),
-                  SizedBox(
+                  const SizedBox(
                     height: 20,
                   ),
                   _buildButtonLogin(),

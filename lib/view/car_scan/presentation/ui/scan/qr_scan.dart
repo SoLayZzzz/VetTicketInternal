@@ -23,55 +23,62 @@ class QRCodeCarScan extends GetView<ScanTicketController> {
     final scanBoxCenter = Offset(screenSize.width / 2, screenSize.height / 2.8);
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      controller.uiState.value.controllerQr.value.start();
+      controller.startQrScanner();
     });
 
-    return Scaffold(
-      backgroundColor: Colors.black,
-      bottomNavigationBar: _button(),
-      appBar: appBarDefault(
-        title: "ស្កែន QR កូដឡើងឡាន",
-        onPressed: () {
-          controller.uiState.value.controllerQr.value.stop();
-          Get.back();
-        },
-      ),
-      body: Stack(
-        children: [
-          // Camera preview
-          MobileScanner(
-            controller: controller.uiState.value.controllerQr.value,
-            onDetect: controller.onDectQR,
-          ),
+    return PopScope(
+      canPop: true,
+      onPopInvoked: (didPop) {
+        if (!didPop) return;
+        controller.uiState.value.controllerQr.value.stop();
+      },
+      child: Scaffold(
+        backgroundColor: Colors.black,
+        bottomNavigationBar: _button(),
+        appBar: appBarDefault(
+          title: "ស្កែន QR កូដឡើងឡាន",
+          onPressed: () {
+            controller.uiState.value.controllerQr.value.stop();
+            Get.back();
+          },
+        ),
+        body: Stack(
+          children: [
+            // Camera preview
+            MobileScanner(
+              controller: controller.uiState.value.controllerQr.value,
+              onDetect: controller.onDectQR,
+            ),
 
-          // Dimmed overlay with transparent hole
-          Positioned.fill(
-            child: CustomPaint(
-              painter: DimmedOverlayWithHole(
-                hole: Rect.fromCenter(
-                  center: scanBoxCenter,
-                  width: scanBoxSize,
-                  height: scanBoxSize,
+            // Dimmed overlay with transparent hole
+            Positioned.fill(
+              child: CustomPaint(
+                painter: DimmedOverlayWithHole(
+                  hole: Rect.fromCenter(
+                    center: scanBoxCenter,
+                    width: scanBoxSize,
+                    height: scanBoxSize,
+                  ),
                 ),
               ),
             ),
-          ),
 
-          // Scan box corner borders
-          Positioned(
-            left: scanBoxCenter.dx - scanBoxSize / 2,
-            top: scanBoxCenter.dy - scanBoxSize / 2,
-            child: SizedBox(
-              width: scanBoxSize,
-              height: scanBoxSize,
-              child: CustomPaint(
-                painter: ScanBoxPainter(),
+            // Scan box corner borders
+            Positioned(
+              left: scanBoxCenter.dx - scanBoxSize / 2,
+              top: scanBoxCenter.dy - scanBoxSize / 2,
+              child: SizedBox(
+                width: scanBoxSize,
+                height: scanBoxSize,
+                child: CustomPaint(
+                  painter: ScanBoxPainter(),
+                ),
               ),
             ),
-          ),
 
-          _buildTitle(),
-        ],
+            _buildTitle(),
+          ],
+        ),
       ),
     );
   }
@@ -162,6 +169,7 @@ class QRCodeCarScan extends GetView<ScanTicketController> {
               borderRadius: BorderRadius.circular(5),
               color: AppColors.primaryColor,
               onTap: () {
+                controller.uiState.value.controllerQr.value.stop();
                 Get.back();
               },
               child: const TextMedium(

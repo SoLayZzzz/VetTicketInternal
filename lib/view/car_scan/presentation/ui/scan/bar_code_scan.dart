@@ -23,49 +23,56 @@ class BarCodeCarScan extends GetView<ScanTicketController> {
     final scanBoxCenter = Offset(screenSize.width / 2, screenSize.height / 2.8);
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      controller.uiState.value.controllerBarCode.value.start();
+      controller.startBarCodeScanner();
     });
 
-    return Scaffold(
-      backgroundColor: Colors.black,
-      bottomNavigationBar: _button(),
-      appBar: appBarDefault(
-        title: "Mobile ស្កេនឡើងឡាន",
-        onPressed: () {
-          controller.uiState.value.controllerBarCode.value.stop();
-          Get.back();
-        },
-      ),
-      body: Stack(
-        children: [
-          MobileScanner(
-            controller: controller.uiState.value.controllerBarCode.value,
-            onDetect: controller.onDetecBarCode,
-          ),
-          Positioned.fill(
-            child: CustomPaint(
-              painter: DimmedOverlayWithHole(
-                hole: Rect.fromCenter(
-                  center: scanBoxCenter,
-                  width: scanBoxSize,
-                  height: scanBoxSize,
+    return PopScope(
+      canPop: true,
+      onPopInvoked: (didPop) {
+        if (!didPop) return;
+        controller.uiState.value.controllerBarCode.value.stop();
+      },
+      child: Scaffold(
+        backgroundColor: Colors.black,
+        bottomNavigationBar: _button(),
+        appBar: appBarDefault(
+          title: "Mobile ស្កេនឡើងឡាន",
+          onPressed: () {
+            controller.uiState.value.controllerBarCode.value.stop();
+            Get.back();
+          },
+        ),
+        body: Stack(
+          children: [
+            MobileScanner(
+              controller: controller.uiState.value.controllerBarCode.value,
+              onDetect: controller.onDetecBarCode,
+            ),
+            Positioned.fill(
+              child: CustomPaint(
+                painter: DimmedOverlayWithHole(
+                  hole: Rect.fromCenter(
+                    center: scanBoxCenter,
+                    width: scanBoxSize,
+                    height: scanBoxSize,
+                  ),
                 ),
               ),
             ),
-          ),
-          Positioned(
-            left: scanBoxCenter.dx - scanBoxSize / 2,
-            top: scanBoxCenter.dy - scanBoxSize / 2,
-            child: SizedBox(
-              width: scanBoxSize,
-              height: scanBoxSize,
-              child: CustomPaint(
-                painter: ScanBoxPainter(),
+            Positioned(
+              left: scanBoxCenter.dx - scanBoxSize / 2,
+              top: scanBoxCenter.dy - scanBoxSize / 2,
+              child: SizedBox(
+                width: scanBoxSize,
+                height: scanBoxSize,
+                child: CustomPaint(
+                  painter: ScanBoxPainter(),
+                ),
               ),
             ),
-          ),
-          _buildTitle(),
-        ],
+            _buildTitle(),
+          ],
+        ),
       ),
     );
   }
@@ -157,6 +164,7 @@ class BarCodeCarScan extends GetView<ScanTicketController> {
               borderRadius: BorderRadius.circular(5),
               color: AppColors.primaryColor,
               onTap: () {
+                controller.uiState.value.controllerBarCode.value.stop();
                 Get.back();
               },
               child: const TextMedium(

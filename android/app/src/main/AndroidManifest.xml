@@ -12,7 +12,7 @@
 
 
     <application
-        android:label="vet_internal_ticket"
+        android:label="VET Ticket"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
 

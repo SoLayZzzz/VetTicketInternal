@@ -1,6 +1,6 @@
 {
-    "name": "vet_internal_ticke",
-    "short_name": "vet_internal_ticke",
+    "name": "VET Ticket",
+    "short_name": "VET Ticket",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#0175C2",

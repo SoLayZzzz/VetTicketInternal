@@ -5,7 +5,7 @@ class AppImages {
   static const IM_VET_EXPRESS = "assets/images/img_vet_exp.png";
   static const IM_line = "assets/images/img_line.png";
   static const IM_VET_LOGO_RECIP = "assets/images/img_vet_express.png";
-  static const IM_VET_Ticket = "assets/images/img_vet_ticket.png";
+  static const IM_VET_Ticket = "assets/images/VET Ticket-01.png";
   static const IM_QRCode = "assets/images/img_qrcode.png";
 
   // Kind of vehicle vet
@@ -48,4 +48,8 @@ class AppImages {
   static const IM_SPEEDBOAT_INSIDE_2 = "assets/images/SpeedBoat-02.jpg";
   static const IM_SPEEDBOAT_INSIDE_3 = "assets/images/SpeedBoat-03.jpg";
   static const IM_SPEEDBOAT_INSIDE_4 = "assets/images/SpeedBoat-04.jpg";
+
+  // App Logo
+  static const APP_LOGO_1 = "assets/images/VET Ticket-01.png";
+  static const APP_LOGO_2 = "assets/images/VET Ticket-02.png";
 }

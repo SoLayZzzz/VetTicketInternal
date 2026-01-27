@@ -87,8 +87,7 @@ class _SelectBusState extends State<SelectBus> {
       final result = await Navigator.push<Map<String, dynamic>>(
         context,
         MaterialPageRoute(
-          builder:
-              (_) => ChooseScreen(
+          builder: (_) => ChooseScreen(
             bustListData: widget.bustListData,
             selectedLocation: selectedText,
             hintText: widget.hintText ?? widget.text,
@@ -114,12 +113,11 @@ class _SelectBusState extends State<SelectBus> {
 
   @override
   Widget build(BuildContext context) {
-    final effectiveBorderColor =
-    widget.hasError
+    final effectiveBorderColor = widget.hasError
         ? Colors.red
         : (widget.activeBorderColor != null && widget.hasData)
-        ? widget.activeBorderColor!
-        : widget.borderColor;
+            ? widget.activeBorderColor!
+            : widget.borderColor;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -136,6 +134,12 @@ class _SelectBusState extends State<SelectBus> {
                 width: widget.borderWidth,
                 color: effectiveBorderColor,
               ),
+              boxShadow: const [
+                BoxShadow(
+                  color: Colors.black,
+                  blurRadius: 1,
+                ),
+              ],
             ),
             child: Padding(
               padding: const EdgeInsets.only(top: 18, bottom: 18),
@@ -143,33 +147,31 @@ class _SelectBusState extends State<SelectBus> {
                 child: Row(
                   children: [
                     Expanded(
-                      child:
-                      widget.isLoading
+                      child: widget.isLoading
                           ? const Padding(
-                        padding: EdgeInsets.only(right: 20),
-                        child: SizedBox(
-                          height: 20,
-                          width: 20,
-                          child: CircularProgressIndicator(
-                            strokeWidth: 2,
-                          ),
-                        ),
-                      )
+                              padding: EdgeInsets.only(right: 20),
+                              child: SizedBox(
+                                height: 20,
+                                width: 20,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                ),
+                              ),
+                            )
                           : Padding(
-                        padding: const EdgeInsets.only(left: 10),
-                        child: Text(
-                          selectedText ??
-                              widget.hintText ??
-                              widget.title.toString(),
-                          style: widget.textStyle?.copyWith(
-                            color:
-                            widget.isEnabled
-                                ? widget.textStyle?.color
-                                : Colors.grey,
-                          ),
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ),
+                              padding: const EdgeInsets.only(left: 10),
+                              child: Text(
+                                selectedText ??
+                                    widget.hintText ??
+                                    widget.title.toString(),
+                                style: widget.textStyle?.copyWith(
+                                  color: widget.isEnabled
+                                      ? widget.textStyle?.color
+                                      : Colors.grey,
+                                ),
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
                     ),
                     if (widget.assetImage != null)
                       Padding(
@@ -251,13 +253,12 @@ class _ChooseScreenState extends State<ChooseScreen> {
         );
       }
 
-      filteredData =
-          widget.bustListData
-              .where(
-                (item) =>
+      filteredData = widget.bustListData
+          .where(
+            (item) =>
                 item.toString().toLowerCase().contains(query.toLowerCase()),
           )
-              .toList();
+          .toList();
     });
   }
 
@@ -285,12 +286,11 @@ class _ChooseScreenState extends State<ChooseScreen> {
               filled: true,
               fillColor: Colors.white,
               hintText: widget.hintText ?? widget.title,
-              suffixIcon:
-              widget.suffixIcon != null
+              suffixIcon: widget.suffixIcon != null
                   ? Padding(
-                padding: const EdgeInsets.all(12),
-                child: Image.asset(widget.suffixIcon!),
-              )
+                      padding: const EdgeInsets.all(12),
+                      child: Image.asset(widget.suffixIcon!),
+                    )
                   : null,
               border: OutlineInputBorder(
                 borderSide: const BorderSide(width: 1, color: Colors.grey),
@@ -301,49 +301,47 @@ class _ChooseScreenState extends State<ChooseScreen> {
           ),
         ),
       ),
-      body:
-      filteredData.isEmpty
+      body: filteredData.isEmpty
           ? Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(widget.noDataIcon, size: 50, color: Colors.grey),
-            const SizedBox(height: 10),
-            Text(
-              widget.noDataText ?? 'No data found',
-              style: const TextStyle(color: Colors.grey),
-            ),
-          ],
-        ),
-      )
-          : ListView.builder(
-        itemCount: filteredData.length,
-        itemBuilder: (context, index) {
-          final value = filteredData[index];
-          return Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 10),
-            child: InkWell(
-              onTap: () => _selectItem(value.toString()),
-              child: Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 10,
-                  vertical: 15,
-                ),
-                decoration: BoxDecoration(
-                  border: const Border(
-                    bottom: BorderSide(width: 1, color: Colors.grey),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(widget.noDataIcon, size: 50, color: Colors.grey),
+                  const SizedBox(height: 10),
+                  Text(
+                    widget.noDataText ?? 'No data found',
+                    style: const TextStyle(color: Colors.grey),
                   ),
-                  color:
-                  value.toString() == widget.selectedLocation
-                      ? Colors.grey[200]
-                      : Colors.transparent,
-                ),
-                child: Text(value.toString()),
+                ],
               ),
+            )
+          : ListView.builder(
+              itemCount: filteredData.length,
+              itemBuilder: (context, index) {
+                final value = filteredData[index];
+                return Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 10),
+                  child: InkWell(
+                    onTap: () => _selectItem(value.toString()),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 10,
+                        vertical: 15,
+                      ),
+                      decoration: BoxDecoration(
+                        border: const Border(
+                          bottom: BorderSide(width: 1, color: Colors.grey),
+                        ),
+                        color: value.toString() == widget.selectedLocation
+                            ? Colors.grey[200]
+                            : Colors.transparent,
+                      ),
+                      child: Text(value.toString()),
+                    ),
+                  ),
+                );
+              },
             ),
-          );
-        },
-      ),
     );
   }
 }

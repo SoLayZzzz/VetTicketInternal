@@ -146,8 +146,6 @@ class _SelectLocationState extends State<SelectLocation> {
         GestureDetector(
           onTap: _navigateAndSelect,
           child: Container(
-            // duration: const Duration(milliseconds: 300),
-            // curve: Curves.easeInOut,
             decoration: BoxDecoration(
               color: Colors.white,
               borderRadius: widget.borderRadius,
@@ -294,12 +292,20 @@ class _ChooseScreenState extends State<ChooseScreen> {
                   filled: true,
                   fillColor: Colors.white,
                   hintText: widget.hintText ?? widget.title,
-                  suffixIcon: widget.suffixIcon != null
-                      ? Padding(
-                          padding: const EdgeInsets.all(12),
-                          child: Image.asset(widget.suffixIcon!),
+                  suffixIcon: _textController.text.isNotEmpty
+                      ? IconButton(
+                          icon: const Icon(Icons.close),
+                          onPressed: () {
+                            _textController.clear();
+                            controller.filterData('');
+                          },
                         )
-                      : null,
+                      : (widget.suffixIcon != null
+                          ? Padding(
+                              padding: const EdgeInsets.all(12),
+                              child: Image.asset(widget.suffixIcon!),
+                            )
+                          : null),
                   border: OutlineInputBorder(
                     borderSide: const BorderSide(width: 1, color: Colors.grey),
                     borderRadius: BorderRadius.circular(10),

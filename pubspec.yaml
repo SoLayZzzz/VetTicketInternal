@@ -51,6 +51,7 @@ dev_dependencies:
   json_serializable: ^6.7.1
   build_runner: ^2.4.8
   flutter_lints: ^4.0.0
+  flutter_launcher_icons: ^0.14.2
 
 
 flutter:
@@ -60,6 +61,14 @@ flutter:
     - assets/images/
     - assets/icons/
     - assets/
+
+flutter_launcher_icons:
+  android: true
+  ios: true
+  image_path: "assets/images/VET Ticket-02.png"
+  adaptive_icon_foreground: "assets/images/VET Ticket-03.png"
+  adaptive_icon_background: "#FFFFFF"
+  remove_alpha_ios: true
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images
