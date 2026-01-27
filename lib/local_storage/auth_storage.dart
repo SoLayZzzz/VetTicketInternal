@@ -1,4 +1,5 @@
-import 'package:hive_flutter/hive_flutter.dart';
+import 'package:hive/hive.dart';
+import 'package:vet_internal_ticket/local_storage/hive_service.dart';
 
 class AuthStorage {
   static const String _authBox = 'auth_box';
@@ -8,8 +9,7 @@ class AuthStorage {
   late Box _box;
 
   Future<void> innit() async {
-    await Hive.initFlutter();
-    _box = await Hive.openBox(_authBox);
+    _box = await HiveService.openBox(_authBox);
   }
 
 // =============== Access Token ================

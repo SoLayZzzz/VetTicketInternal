@@ -75,9 +75,23 @@ class PassengerDetailController extends StateController<PasengerDetailState> {
     // ✅ Start watching input for error clearing
     uiState.value.phoneController.addListener(() {
       final text = uiState.value.phoneController.text.trim();
-      if (text.length >= 8 && uiState.value.showPhoneError.value) {
-        uiState.value.showPhoneError.value = false;
+      if (!uiState.value.hasSubmitted.value) return;
+
+      if (text.isEmpty) {
+        uiState.value.showPhoneError.value = true;
+        uiState.value.phoneErrorMessage.value = 'សូមបំពេញលេខទូរស័ព្ទ';
+        return;
       }
+
+      final hasInvalidLength = text.length < 8 || text.length > 10;
+      if (hasInvalidLength) {
+        uiState.value.showPhoneError.value = true;
+        uiState.value.phoneErrorMessage.value = 'លេខលេខទូរស័ព្ទមិនត្រឹមត្រូវ';
+        return;
+      }
+
+      uiState.value.showPhoneError.value = false;
+      uiState.value.phoneErrorMessage.value = '';
     });
 
     fetchStations();
@@ -198,12 +212,24 @@ class PassengerDetailController extends StateController<PasengerDetailState> {
 
     // Reset error flags
     con.showPhoneError.value = false;
+    con.phoneErrorMessage.value = '';
     con.showNationalityError.value = false;
     con.showGenderError.value = false;
 
     // Validate phone
-    final phoneLen = con.phoneController.text.trim().length;
-    final hasPhoneError = phoneLen < 8 || phoneLen > 10;
+    final phoneText = con.phoneController.text.trim();
+    final phoneLen = phoneText.length;
+    final bool hasPhoneError;
+    if (phoneText.isEmpty) {
+      hasPhoneError = true;
+      con.phoneErrorMessage.value = 'សូមបំពេញលេខទូរស័ព្ទ';
+    } else if (phoneLen < 8 || phoneLen > 10) {
+      hasPhoneError = true;
+      con.phoneErrorMessage.value = 'លេខលេខទូរស័ព្ទមិនត្រឹមត្រូវ';
+    } else {
+      hasPhoneError = false;
+      con.phoneErrorMessage.value = '';
+    }
     con.showPhoneError.value = hasPhoneError;
 
     // Validate gender per seat

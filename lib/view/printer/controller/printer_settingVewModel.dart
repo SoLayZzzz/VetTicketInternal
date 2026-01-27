@@ -6,8 +6,8 @@ import 'package:flutter/services.dart';
 import 'package:get/get_rx/get_rx.dart';
 import 'package:image/image.dart' as img;
 import 'package:image/image.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:widgets_to_image/widgets_to_image.dart';
+import 'package:vet_internal_ticket/local_storage/printer_storage.dart';
 import '../../../app_route.dart';
 import '../../../utils/General_utils.dart';
 import '../../../utils/dialog/dailogPrinter.dart';
@@ -18,6 +18,8 @@ class PrinterSettingController extends GetxController {
   static const MethodChannel platform = MethodChannel('com.udaya.bluetooth');
   static const EventChannel eventChannel =
       EventChannel('com.udaya.bluetooth.stream');
+
+  final PrinterStorage _printerStorage = Get.find<PrinterStorage>();
 
   // Reactive variables
   var isPrinterConnected = false.obs;
@@ -85,14 +87,12 @@ class PrinterSettingController extends GetxController {
   WidgetsToImageController printer = WidgetsToImageController();
 
   saveSize() async {
-    final SharedPreferences sp = await SharedPreferences.getInstance();
-    sp.setString('size', sizePaperEdit.value.text);
+    await _printerStorage.setPaperSize(sizePaperEdit.value.text);
     sizePaper.value = double.parse(sizePaperEdit.value.text);
   }
 
   getSize() async {
-    final SharedPreferences sp = await SharedPreferences.getInstance();
-    final String? size = sp.getString('size');
+    final String? size = _printerStorage.getPaperSize();
     if (size != null) {
       sizePaperEdit = TextEditingController(text: size);
       sizePaper.value = double.parse(sizePaperEdit.value.text);
@@ -219,10 +219,11 @@ class PrinterSettingController extends GetxController {
   Future<void> _savePrinterDetails(
       String address, String deviceName, String type) async {
     try {
-      final prefs = await SharedPreferences.getInstance();
-      await prefs.setString('printer_address', address);
-      await prefs.setString('printer_name', deviceName);
-      await prefs.setString('printer_type', type);
+      await _printerStorage.setPrinterDetails(
+        address: address,
+        name: deviceName,
+        type: type,
+      );
       print('Printer details saved: $deviceName ($address) $type');
     } catch (e) {
       print('Failed to save printer details: $e');
@@ -231,11 +232,7 @@ class PrinterSettingController extends GetxController {
 
   Future<Map<String, String?>> getSavedPrinterDetails() async {
     try {
-      final prefs = await SharedPreferences.getInstance();
-      final address = prefs.getString('printer_address');
-      final name = prefs.getString('printer_name');
-      final type = prefs.getString('printer_type');
-      return {'address': address, 'name': name, 'type': type};
+      return _printerStorage.getPrinterDetails();
     } catch (e) {
       print('Failed to retrieve printer details: $e');
       return {'address': null, 'name': null};

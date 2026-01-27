@@ -8,15 +8,16 @@ import 'package:get/get_connect/http/src/request/request.dart';
 import 'package:vet_internal_ticket/app_route.dart';
 import 'package:vet_internal_ticket/core/url/base_url.dart';
 import 'package:vet_internal_ticket/core/base/api_error.dart';
-import 'package:vet_internal_ticket/utils/preference/app_pref.dart';
+import 'package:vet_internal_ticket/local_storage/auth_storage.dart';
 import 'package:vet_internal_ticket/view/auth/domain/repsositories/user_repository.dart';
 import 'package:vet_internal_ticket/view/auth/presentation/controller/auth_controller.dart';
 
 class NetworkDataSource extends GetConnect {
   final UserRepository _userRepository;
-  final AppPref _appPref = AppPref();
+  // Hive
+  final AuthStorage _authStorage;
 
-  NetworkDataSource(this._userRepository);
+  NetworkDataSource(this._userRepository, this._authStorage);
 
   @override
   void onInit() async {
@@ -24,7 +25,8 @@ class NetworkDataSource extends GetConnect {
       // ✅ Add Authorization header if token exists (skip login API)
       if (!request.url.path.endsWith('auth/login')) {
         final tokenType = _userRepository.loginResponse().tokenType ?? 'Bearer';
-        final accessToken = await _appPref.getUserToken();
+        // final accessToken = await _appPref.getUserToken();
+        final accessToken = _authStorage.getAccessTOKEN();
 
         if (kDebugMode) {
           print("Access Token NetworkDataSource: $accessToken");
@@ -64,7 +66,7 @@ class NetworkDataSource extends GetConnect {
           await authController.loginRefreshToken();
 
           // ✅ Get new token after refresh
-          final newAccessToken = await _appPref.getUserToken();
+          final newAccessToken = _authStorage.getAccessTOKEN();
           if (newAccessToken != null) {
             print("✅ Retrying request with new token...");
             request.headers['Authorization'] = "Bearer $newAccessToken";
@@ -87,7 +89,7 @@ class NetworkDataSource extends GetConnect {
     httpClient.addAuthenticator<dynamic>((request) async {
       // ✅ Add token on retry attempts
       final tokenType = _userRepository.loginResponse().tokenType ?? 'Bearer';
-      final accessToken = await _appPref.getUserToken();
+      final accessToken = _authStorage.getAccessTOKEN();
       if (accessToken != null) {
         request.headers['Authorization'] = "$tokenType $accessToken";
       }
@@ -120,5 +122,9 @@ class NetworkDataSource extends GetConnect {
     }
 
     throw ApiError(res.bodyString, res.statusCode);
+  }
+
+  Future<void> saveAccessToken(String accessToken) async {
+    await _authStorage.saveAccessToken(accessToken);
   }
 }

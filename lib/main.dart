@@ -3,6 +3,10 @@ import 'package:flutter/services.dart';
 import 'package:vet_internal_ticket/app_binding.dart';
 import 'package:vet_internal_ticket/app_route.dart';
 import 'package:vet_internal_ticket/booking_service.dart';
+import 'package:vet_internal_ticket/local_storage/auth_storage.dart';
+import 'package:vet_internal_ticket/local_storage/hive_service.dart';
+import 'package:vet_internal_ticket/local_storage/printer_storage.dart';
+import 'package:vet_internal_ticket/local_storage/settings_storage.dart';
 import 'theme/app_colors.dart';
 import 'package:get/get.dart';
 
@@ -11,6 +15,21 @@ void main() async {
   SystemChrome.setSystemUIOverlayStyle(const SystemUiOverlayStyle(
     statusBarColor: Colors.transparent,
   ));
+
+  await HiveService.init();
+
+  final authStorage = AuthStorage();
+  await authStorage.innit();
+  Get.put<AuthStorage>(authStorage, permanent: true);
+
+  final settingsStorage = SettingsStorage();
+  await settingsStorage.init();
+  Get.put<SettingsStorage>(settingsStorage, permanent: true);
+
+  final printerStorage = PrinterStorage();
+  await printerStorage.init();
+  Get.put<PrinterStorage>(printerStorage, permanent: true);
+
   Get.put(BookingService());
   runApp(const MyApp());
 }

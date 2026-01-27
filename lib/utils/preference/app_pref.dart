@@ -1,95 +1,77 @@
-import 'package:shared_preferences/shared_preferences.dart';
-import '../static.dart';
+import 'package:get/get.dart';
+import 'package:vet_internal_ticket/local_storage/auth_storage.dart';
+import 'package:vet_internal_ticket/local_storage/settings_storage.dart';
 
 class AppPref {
   // pref for token
   Future<void> setUserToken(String value) async {
-    SharedPreferences sp = await SharedPreferences.getInstance();
-    sp.setString(Static.keyAccessToken, value);
+    await Get.find<AuthStorage>().saveAccessToken(value);
   }
 
   Future<String?> getUserToken() async {
-    SharedPreferences sp = await SharedPreferences.getInstance();
-    return sp.getString(Static.keyAccessToken);
+    return Get.find<AuthStorage>().getAccessTOKEN();
   }
 
   Future<void> removeToken() async {
-    SharedPreferences sp = await SharedPreferences.getInstance();
-    sp.remove(Static.keyAccessToken);
+    await Get.find<AuthStorage>().deleteToken();
   }
 
   // pref for refresh_token
   Future<void> setRefreshToken(String refreshToken) async {
-    SharedPreferences sp = await SharedPreferences.getInstance();
-    await sp.setString(Static.refreshToken, refreshToken);
+    await Get.find<AuthStorage>().saveRefreshToken(refreshToken);
   }
 
   Future<String?> getRefreshToken() async {
-    SharedPreferences sp = await SharedPreferences.getInstance();
-    return sp.getString(Static.refreshToken);
+    return Get.find<AuthStorage>().getRefreshToken();
   }
 
   Future<void> clearRefreshToken() async {
-    SharedPreferences sp = await SharedPreferences.getInstance();
-    await sp.remove(Static.refreshToken);
+    await Get.find<AuthStorage>().deleteToken();
   }
 
   // pref for login
   Future<void> setLogin() async {
-    SharedPreferences sp = await SharedPreferences.getInstance();
-    await sp.setBool(Static.keyLogin, true);
+    await Get.find<SettingsStorage>().setLogin(true);
   }
 
   Future<bool?> getLogin() async {
-    SharedPreferences sp = await SharedPreferences.getInstance();
-    return sp.getBool(Static.keyLogin);
+    return Get.find<SettingsStorage>().getLogin();
   }
 
   Future<void> clearLogin() async {
-    SharedPreferences sp = await SharedPreferences.getInstance();
-    await sp.remove(Static.keyLogin);
+    await Get.find<SettingsStorage>().clearLogin();
   }
 
   // pref for language
   Future<void> setLanguage(String language) async {
-    SharedPreferences sp = await SharedPreferences.getInstance();
-    await sp.setString(Static.keyLanguage, language);
+    await Get.find<SettingsStorage>().setLanguage(language);
   }
 
   Future<String?> getLanguage() async {
-    SharedPreferences sp = await SharedPreferences.getInstance();
-    return sp.getString(Static.keyLanguage);
+    return Get.find<SettingsStorage>().getLanguage();
   }
 
   Future<void> clearLanguage() async {
-    SharedPreferences sp = await SharedPreferences.getInstance();
-    await sp.remove(Static.keyLanguage);
+    await Get.find<SettingsStorage>().clearLanguage();
   }
 
   // pref for notification page
   Future<void> setInitNotificationPage(bool value) async {
-    SharedPreferences sp = await SharedPreferences.getInstance();
-    await sp.setBool(Static.keyInitNotificationPage, value);
+    await Get.find<SettingsStorage>().setInitNotificationPage(value);
   }
 
   Future<bool?> getInitNotificationPage() async {
-    SharedPreferences sp = await SharedPreferences.getInstance();
-    return sp.getBool(Static.keyInitNotificationPage);
+    return Get.find<SettingsStorage>().getInitNotificationPage();
   }
 
   Future<void> clearInitNotificationPage() async {
-    SharedPreferences sp = await SharedPreferences.getInstance();
-    await sp.remove(Static.keyInitNotificationPage);
+    await Get.find<SettingsStorage>().clearInitNotificationPage();
   }
 
   Future<void> clear() async {
-    SharedPreferences sp = await SharedPreferences.getInstance();
     await Future.wait([
-      sp.remove(Static.keyAccessToken),
-      sp.remove(Static.refreshToken),
-      sp.remove(Static.keyLogin),
-      sp.remove(Static.keyLanguage),
-      sp.remove(Static.keyInitNotificationPage),
+      Get.find<AuthStorage>().deleteToken(),
+      Get.find<SettingsStorage>().clearAll(),
     ]);
   }
 }

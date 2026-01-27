@@ -364,11 +364,14 @@ class PassengerDetailScreen extends GetView<PassengerDetailController> {
             final hasError =
                 state.hasSubmitted.value && state.showPhoneError.value;
             if (!hasError) return const SizedBox.shrink();
-            return const Padding(
-              padding: EdgeInsets.only(top: 6),
+            final message = state.phoneErrorMessage.value.isNotEmpty
+                ? state.phoneErrorMessage.value
+                : 'សូមបំពេញលេខទូរស័ព្ទ';
+            return Padding(
+              padding: const EdgeInsets.only(top: 6),
               child: Text(
-                'លេខទូរស័ព្ទត្រូវមានចន្លោះពី 8 ដល់ 10 ខ្ទង់',
-                style: TextStyle(color: Colors.red, fontSize: 12),
+                message,
+                style: const TextStyle(color: Colors.red, fontSize: 12),
               ),
             );
           }),
@@ -382,19 +385,19 @@ class PassengerDetailScreen extends GetView<PassengerDetailController> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Obx(() {
-              final state = controller.uiState.value;
-              final show =
-                  state.hasSubmitted.value && state.showGenderError.value;
-              if (!show) return const SizedBox.shrink();
-              return const Padding(
-                padding: EdgeInsets.only(bottom: 6),
-                child: Text(
-                  '* សូមជ្រើសរើសភេទ',
-                  style: TextStyle(color: Colors.red, fontSize: 12),
-                ),
-              );
-            }),
+            // Obx(() {
+            //   final state = controller.uiState.value;
+            //   final show =
+            //       state.hasSubmitted.value && state.showGenderError.value;
+            //   if (!show) return const SizedBox.shrink();
+            //   return const Padding(
+            //     padding: EdgeInsets.only(bottom: 6),
+            //     child: Text(
+            //       '* សូមជ្រើសរើសភេទ',
+            //       style: TextStyle(color: Colors.red, fontSize: 12),
+            //     ),
+            //   );
+            // }),
             ListView.builder(
                 shrinkWrap: true,
                 physics: const NeverScrollableScrollPhysics(),
@@ -482,6 +485,19 @@ class PassengerDetailScreen extends GetView<PassengerDetailController> {
                           }),
                         ],
                       ),
+                      Obx(() {
+                        final state = controller.uiState.value;
+                        final show = state.hasSubmitted.value &&
+                            state.showGenderError.value;
+                        if (!show) return const SizedBox.shrink();
+                        return const Padding(
+                          padding: EdgeInsets.only(bottom: 6),
+                          child: Text(
+                            '* សូមជ្រើសរើសភេទ',
+                            style: TextStyle(color: Colors.red, fontSize: 12),
+                          ),
+                        );
+                      }),
                       if (seats.length > 1 && index != seats.length - 1)
                         const Padding(
                           padding: EdgeInsets.only(top: 15),

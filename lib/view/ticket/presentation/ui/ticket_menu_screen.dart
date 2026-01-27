@@ -19,6 +19,12 @@ import '../../../../theme/app_colors.dart';
 class TicketMenuScreen extends GetView<TicketMenuController> {
   const TicketMenuScreen({super.key});
 
+  double _responsiveFontSize(BuildContext context, double baseFontSize) {
+    final width = MediaQuery.sizeOf(context).width;
+    final scale = (width / 375.0).clamp(0.9, 1.2);
+    return baseFontSize * scale;
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -39,7 +45,7 @@ class TicketMenuScreen extends GetView<TicketMenuController> {
                 () => _buildSelectDestinationFrom(),
               ),
               _buildSelectDestinationTo(),
-              _buildSelectDate(),
+              _buildSelectDate(context),
 
               // button search
               _buildSearch(),
@@ -195,60 +201,63 @@ class TicketMenuScreen extends GetView<TicketMenuController> {
     });
   }
 
-  Widget _buildSelectDate() => Padding(
-        padding: EdgeInsets.symmetric(vertical: Dimension.padding20),
-        child: Row(
-          children: [
-            Expanded(
-              child: DatePicker(
+  Widget _buildSelectDate(BuildContext context) {
+    final dateFontSize = _responsiveFontSize(context, Dimension.fontSize12);
+
+    return Padding(
+      padding: EdgeInsets.symmetric(vertical: Dimension.padding20),
+      child: Row(
+        children: [
+          Expanded(
+            child: DatePicker(
+              width: double.infinity,
+              assetImage: AssetImage(AppIcons.IC_calender),
+              clearable: false,
+              borderWidth: 1,
+              borderColor: Colors.black.withAlpha(400),
+              showCurrentDateAuto: true,
+              allowPastDates: false,
+              backgroundColor: AppColors.whiteColor,
+              selectedDateColor: AppColors.primaryColor,
+              fontSize: dateFontSize,
+              onSeclectDate: (formattedDate) {
+                controller.updateSelectedDate(formattedDate);
+              },
+            ),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Obx(() {
+              DateTime? goDate;
+              try {
+                final parts = controller.uiState.value.selectDate.split('-');
+                if (parts.length == 3) {
+                  goDate = DateTime.parse(controller.uiState.value.selectDate);
+                }
+              } catch (_) {}
+
+              return DatePicker(
                 width: double.infinity,
                 assetImage: AssetImage(AppIcons.IC_calender),
-                clearable: false,
+                fontSize: dateFontSize,
+                showCurrentDateAuto: false,
+                allowPastDates: false,
                 borderWidth: 1,
                 borderColor: Colors.black.withAlpha(400),
-                showCurrentDateAuto: true,
-                allowPastDates: false,
+                text: "ថ្ងៃមកវិញ",
+                minDate: goDate,
                 backgroundColor: AppColors.whiteColor,
                 selectedDateColor: AppColors.primaryColor,
-                fontSize: 13,
                 onSeclectDate: (formattedDate) {
-                  controller.updateSelectedDate(formattedDate);
+                  controller.updateSelectedReturnDate(formattedDate);
                 },
-              ),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Obx(() {
-                DateTime? goDate;
-                try {
-                  final parts = controller.uiState.value.selectDate.split('-');
-                  if (parts.length == 3) {
-                    goDate =
-                        DateTime.parse(controller.uiState.value.selectDate);
-                  }
-                } catch (_) {}
-
-                return DatePicker(
-                  width: double.infinity,
-                  assetImage: AssetImage(AppIcons.IC_calender),
-                  fontSize: 13,
-                  showCurrentDateAuto: false,
-                  allowPastDates: false,
-                  borderWidth: 1,
-                  borderColor: Colors.black.withAlpha(400),
-                  text: "ថ្ងៃមកវិញ",
-                  minDate: goDate,
-                  backgroundColor: AppColors.whiteColor,
-                  selectedDateColor: AppColors.primaryColor,
-                  onSeclectDate: (formattedDate) {
-                    controller.updateSelectedReturnDate(formattedDate);
-                  },
-                );
-              }),
-            ),
-          ],
-        ),
-      );
+              );
+            }),
+          ),
+        ],
+      ),
+    );
+  }
 
   _buildSearch() {
     return Padding(

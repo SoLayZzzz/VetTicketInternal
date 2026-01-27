@@ -23,6 +23,7 @@ class Dimension {
   static const padding40 = 40.0;
 
   //* font size
+  static const fontSize12 = 12.0;
   static const fontSize14 = 14.0;
   static const fontSize16 = 16.0;
   static const fontSize18 = 18.0;

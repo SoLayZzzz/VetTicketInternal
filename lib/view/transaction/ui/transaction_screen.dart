@@ -3,7 +3,6 @@
 import 'dart:convert';
 import 'dart:async';
 import 'dart:io';
-import 'package:url_launcher/url_launcher.dart';
 
 import 'dart:typed_data';
 import 'dart:ui' as ui;
@@ -27,6 +26,7 @@ import 'package:vet_internal_ticket/theme/app_padding.dart';
 import 'package:vet_internal_ticket/theme/app_colors.dart';
 import 'package:vet_internal_ticket/utils/dimension.dart';
 import 'package:vet_internal_ticket/view/booking/presentation/controller/booking_controller.dart';
+import 'package:vet_internal_ticket/booking_service.dart';
 import 'package:widgets_to_image/widgets_to_image.dart';
 
 import '../../../utils/bottom_sheets/button.dart';
@@ -45,6 +45,19 @@ class _TransactionScreenState extends State<TransactionScreen>
   final GlobalKey _printKey = GlobalKey();
   final GlobalKey _recipKey = GlobalKey();
   final GlobalKey _seatQrKey = GlobalKey();
+  final GlobalKey _goTransactionKey = GlobalKey();
+  final GlobalKey _returnTransactionKey = GlobalKey();
+
+  void _handleBackToTicketMenu() {
+    Get.find<BookingService>().reset();
+    Get.offNamedUntil(
+      AppRoutes.ticket_menu_Screen,
+      (route) {
+        final name = route.settings.name;
+        return name == AppRoutes.homeScreen || name == AppRoutes.drawer_menu;
+      },
+    );
+  }
 
   @override
   void dispose() {
@@ -257,6 +270,60 @@ class _TransactionScreenState extends State<TransactionScreen>
     }
   }
 
+  Future<Uint8List> _capturePngFromKey(GlobalKey key) async {
+    final boundary =
+        key.currentContext?.findRenderObject() as RenderRepaintBoundary?;
+
+    if (boundary == null) {
+      throw Exception('Capture target not found');
+    }
+
+    if (boundary.debugNeedsPaint) {
+      await Future.delayed(const Duration(milliseconds: 50));
+    }
+
+    final image = await boundary.toImage(pixelRatio: 3.0);
+    final byteData = await image.toByteData(format: ui.ImageByteFormat.png);
+    return byteData!.buffer.asUint8List();
+  }
+
+  Future<void> _shareTransactionImage() async {
+    try {
+      final dir = await getTemporaryDirectory();
+      final now = DateTime.now();
+
+      final baseName =
+          "${now.year}${_twoDigits(now.month)}${_twoDigits(now.day)}${_twoDigits(now.hour)}${_twoDigits(now.minute)}${_twoDigits(now.second)}";
+
+      final List<XFile> files = [];
+
+      final goBytes = await _capturePngFromKey(_goTransactionKey);
+      final goPath = '${dir.path}/${baseName}_go.png';
+      await File(goPath).writeAsBytes(goBytes);
+      files.add(XFile(goPath));
+
+      final ticketList =
+          controller.state.bookingTransactonModel.value?.body?.ticket;
+      final hasReturn = ticketList != null && ticketList.length > 1;
+
+      if (hasReturn && _returnTransactionKey.currentContext != null) {
+        final returnBytes = await _capturePngFromKey(_returnTransactionKey);
+        final returnPath = '${dir.path}/${baseName}_back.png';
+        await File(returnPath).writeAsBytes(returnBytes);
+        files.add(XFile(returnPath));
+      }
+
+      // ignore: deprecated_member_use
+      await Share.shareXFiles(files);
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Could not share transaction: $e')),
+        );
+      }
+    }
+  }
+
   @override
   void initState() {
     super.initState();
@@ -463,23 +530,6 @@ class _TransactionScreenState extends State<TransactionScreen>
     await Share.shareXFiles([XFile(filePath)]);
   }
 
-  // Open Telegram app
-  void _openTelegram() async {
-    final Uri telegramUrl = Uri.parse(
-      "tg://resolve?domain=telegram",
-    ); // replace 'telegram' with username/group
-    if (await canLaunchUrl(telegramUrl)) {
-      await launchUrl(telegramUrl);
-    } else {
-      final Uri webUrl = Uri.parse("https://t.me/telegram");
-      if (await canLaunchUrl(webUrl)) {
-        await launchUrl(webUrl);
-      } else {
-        print("Could not launch Telegram");
-      }
-    }
-  }
-
   String _twoDigits(int n) => n.toString().padLeft(2, '0');
 
   @override
@@ -487,12 +537,11 @@ class _TransactionScreenState extends State<TransactionScreen>
     final printer = Get.find<PrinterSettingController>();
 
     return Scaffold(
-        // backgroundColor: AppColors.,
         appBar: AppBar(
           backgroundColor: AppColors.primaryColor,
           elevation: 0,
           leading: IconButton(
-            onPressed: _trasactionback,
+            onPressed: _handleBackToTicketMenu,
             icon: const Icon(Icons.arrow_back, color: Colors.white),
           ),
           title: const Text(
@@ -618,7 +667,7 @@ class _TransactionScreenState extends State<TransactionScreen>
                       // onTap: () async {
                       //   await _sharePdf();
                       // },
-                      onTap: _openTelegram,
+                      onTap: _shareTransactionImage,
                       child: TextSmall(
                           text: "ចែករំលែក", color: AppColors.whiteColor),
                     ),
@@ -637,14 +686,17 @@ class _TransactionScreenState extends State<TransactionScreen>
         controller.state.bookingTransactonModel.value?.body?.ticket?.first;
     if (ticket == null) return SizedBox();
 
-    return Container(
-      color: AppColors.primaryPurple,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          RepaintBoundary(key: _recipKey, child: _buildRecip(ticket)),
-          RepaintBoundary(key: _seatQrKey, child: _buildQRSeat(ticket)),
-        ],
+    return RepaintBoundary(
+      key: _goTransactionKey,
+      child: Container(
+        color: AppColors.primaryPurple,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            RepaintBoundary(key: _recipKey, child: _buildRecip(ticket)),
+            RepaintBoundary(key: _seatQrKey, child: _buildQRSeat(ticket)),
+          ],
+        ),
       ),
     );
   }
@@ -656,14 +708,17 @@ class _TransactionScreenState extends State<TransactionScreen>
         (ticketList != null && ticketList.length > 1) ? ticketList[1] : null;
     if (ticket == null) return SizedBox();
 
-    return Container(
-      color: AppColors.primaryPurple,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          _buildRecip(ticket),
-          _buildQRSeat(ticket),
-        ],
+    return RepaintBoundary(
+      key: _returnTransactionKey,
+      child: Container(
+        color: AppColors.primaryPurple,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            _buildRecip(ticket),
+            _buildQRSeat(ticket),
+          ],
+        ),
       ),
     );
   }

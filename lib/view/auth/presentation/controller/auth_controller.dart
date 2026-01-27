@@ -6,7 +6,7 @@ import 'package:vet_internal_ticket/app_route.dart';
 import 'package:vet_internal_ticket/core/base/api_error.dart';
 import 'package:vet_internal_ticket/core/base/state_controller.dart';
 import 'package:vet_internal_ticket/core/device_info/device_info.dart';
-import 'package:vet_internal_ticket/utils/preference/app_pref.dart';
+import 'package:vet_internal_ticket/local_storage/auth_storage.dart';
 import 'package:vet_internal_ticket/view/auth/data/model/request/logOut_body.dart';
 import 'package:vet_internal_ticket/view/auth/data/model/request/login_body.dart';
 import 'package:vet_internal_ticket/view/auth/data/model/request/login_refreshToken_body_request.dart';
@@ -18,9 +18,10 @@ class AuthController extends StateController<AuthState> {
 
   final AuthRepository _authRepository;
   final DeviceInfo _deviceInfo = DeviceInfo();
-  final AppPref _appPref = AppPref();
+  final AuthStorage _authStorage = Get.find<AuthStorage>();
   final userController = TextEditingController(text: "admin");
   final passwordController = TextEditingController(text: "123");
+  // Hive
 
   @override
   AuthState onInitUiState() => AuthState();
@@ -107,26 +108,22 @@ class AuthController extends StateController<AuthState> {
     print('🔹 Token Type: $tokenType');
 
     if (accessToken != null) {
-      await _appPref.setUserToken(accessToken);
+      await _authStorage.saveAccessToken(accessToken);
 
-      final savedAccessToken = await _appPref.getUserToken();
+      final savedAccessToken = _authStorage.getAccessTOKEN();
       print('🔹 Saved access token: $savedAccessToken');
     } else {
       print('⚠️ Access token is null - not saved');
     }
 
     if (refreshToken != null) {
-      await _appPref.setRefreshToken(refreshToken);
+      await _authStorage.saveRefreshToken(refreshToken);
 
-      final savedRefreshToken = await _appPref.getRefreshToken();
+      final savedRefreshToken = _authStorage.getRefreshToken();
       print('🔹 Saved refresh token: $savedRefreshToken');
     } else {
       print('⚠️ Refresh token is null - not saved');
     }
-
-    await _appPref.setLogin();
-    final isLoggedIn = await _appPref.getLogin();
-    print('🔹 Login status saved: $isLoggedIn');
 
     print('=== END TOKEN SAVING ===');
   }
@@ -172,7 +169,7 @@ class AuthController extends StateController<AuthState> {
         Get.offAllNamed(AppRoutes.homeScreen);
       }
 
-      await _appPref.clear();
+      await _authStorage.deleteToken();
       _authRepository.userRepository.clear();
 
       Get.offAllNamed(AppRoutes.loginScreen);
@@ -194,7 +191,7 @@ class AuthController extends StateController<AuthState> {
 
       final deviceInfo = await _deviceInfo.getDeviceInfo();
       final deviceData = _deviceInfo.parseDeviceInfo(deviceInfo);
-      final refreshToken = await _appPref.getRefreshToken();
+      final refreshToken = _authStorage.getRefreshToken();
 
       if (refreshToken == null) {
         print("⚠️ No refresh token found, redirecting to login.");
@@ -231,8 +228,8 @@ class AuthController extends StateController<AuthState> {
 
   Future<void> _saveRefreshToken(
       String accessToken, String refreshToken) async {
-    await _appPref.setUserToken(accessToken);
-    await _appPref.setRefreshToken(refreshToken);
+    await _authStorage.saveAccessToken(accessToken);
+    await _authStorage.saveRefreshToken(refreshToken);
     print("🔹 New tokens saved: AccessToken=$accessToken");
   }
 
@@ -261,24 +258,6 @@ class AuthController extends StateController<AuthState> {
       uiState.update((val) => val?.isLoading = false);
     }
   }
-
-  // Future<void> loginCheckPermission() async {
-  //   try {
-  //     uiState.update((val) => val?.isLoading = true);
-  //     final response = await _authRepository.loginCheckPermission();
-
-  //     if (response != null && response.statusCode == 200) {
-  //       print("✅ Permission data: ${response.body?.body?.toJson()}");
-  //       _authRepository.userRepository.setLoginCheckPermission();
-  //     } else {
-  //       print("⚠️ Permission check failed");
-  //     }
-  //   } catch (e) {
-  //     print("❌ Exception in check permission: $e");
-  //   } finally {
-  //     uiState.update((val) => val?.isLoading = false);
-  //   }
-  // }
 
   // ---------------------------
   // ✅ CHECK TOKEN

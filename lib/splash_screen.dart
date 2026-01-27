@@ -3,12 +3,12 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:vet_internal_ticket/app_image.dart';
 import 'package:vet_internal_ticket/app_route.dart';
+import 'package:vet_internal_ticket/local_storage/auth_storage.dart';
 import 'package:vet_internal_ticket/view/auth/data/network/auth_network_data_source.dart';
 import 'package:vet_internal_ticket/view/auth/data/repositoriesImpl/user_password_auth_repositoryImpl.dart';
 import 'package:vet_internal_ticket/view/auth/domain/repsositories/auth_repository.dart';
 import 'package:vet_internal_ticket/view/auth/presentation/controller/auth_controller.dart';
 import 'package:vet_internal_ticket/view/home/presentaion/controller/home_controller.dart';
-import '../../../utils/preference/app_pref.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -18,7 +18,7 @@ class SplashScreen extends StatefulWidget {
 }
 
 class _SplashScreenState extends State<SplashScreen> {
-  final AppPref _appPref = AppPref();
+  final AuthStorage _authStorage = Get.find<AuthStorage>();
   bool _navigated = false; // ✅ Prevent multiple navigations
 
   @override
@@ -31,15 +31,13 @@ class _SplashScreenState extends State<SplashScreen> {
     if (_navigated) return; // ✅ Ensure this runs only once
     _navigated = true;
 
-    final isLoggedIn = await _appPref.getLogin();
-    final accessToken = await _appPref.getUserToken();
+    final accessToken = _authStorage.getAccessTOKEN();
 
     if (kDebugMode) {
-      print(
-          '🔹 Splash Auth Check: Login=$isLoggedIn | Token=${accessToken != null}');
+      print('🔹 Splash Auth Check: Token=${accessToken != null}');
     }
 
-    if (isLoggedIn == true && accessToken != null) {
+    if (accessToken != null) {
       try {
         await Get.find<AuthController>().loginCheckToken();
 
