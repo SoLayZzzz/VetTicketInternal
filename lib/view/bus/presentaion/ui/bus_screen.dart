@@ -37,58 +37,58 @@ class BusScreen extends StatelessWidget {
                   "ប្រភេទឡាន",
                   style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
                 ),
-                const SizedBox(
-                  height: 10,
-                ),
-                GridView(
-                  padding: EdgeInsets.zero,
-                  shrinkWrap: true,
-                  physics: const NeverScrollableScrollPhysics(),
-                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisSpacing: 10,
-                    mainAxisSpacing: 10,
-                    crossAxisCount: 2,
-                    childAspectRatio: MediaQuery.of(context).size.width /
-                        (MediaQuery.of(context).size.height / 3),
+                Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 10),
+                  child: GridView(
+                    padding: EdgeInsets.zero,
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
+                    gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                      crossAxisSpacing: 10,
+                      mainAxisSpacing: 10,
+                      crossAxisCount: 2,
+                      childAspectRatio: MediaQuery.of(context).size.width /
+                          (MediaQuery.of(context).size.height / 3),
+                    ),
+                    children: VehicleImageData.covers
+                        .where((e) => e.id != 'speedboat')
+                        .map(
+                          (e) => buildInfoCard(
+                            id: e.id,
+                            title: _titleById[e.id] ?? e.id,
+                            image: e.image,
+                          ),
+                        )
+                        .toList(),
                   ),
-                  children: VehicleImageData.covers
-                      .where((e) => e.id != 'speedboat')
-                      .map(
-                        (e) => buildInfoCard(
-                          id: e.id,
-                          title: _titleById[e.id] ?? e.id,
-                          image: e.image,
-                        ),
-                      )
-                      .toList(),
                 ),
-                const Padding(
-                  padding: EdgeInsets.symmetric(vertical: 10),
-                  child: Text("ប្រភេទទូក",
-                      style:
-                          TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
-                ),
-                GridView(
-                  padding: EdgeInsets.zero,
-                  shrinkWrap: true,
-                  physics: const NeverScrollableScrollPhysics(),
-                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisSpacing: 10,
-                    mainAxisSpacing: 10,
-                    crossAxisCount: 2,
-                    childAspectRatio: MediaQuery.of(context).size.width /
-                        (MediaQuery.of(context).size.height / 3),
+                const Text("ប្រភេទទូក",
+                    style:
+                        TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 10),
+                  child: GridView(
+                    padding: EdgeInsets.zero,
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
+                    gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                      crossAxisSpacing: 10,
+                      mainAxisSpacing: 10,
+                      crossAxisCount: 2,
+                      childAspectRatio: MediaQuery.of(context).size.width /
+                          (MediaQuery.of(context).size.height / 3),
+                    ),
+                    children: VehicleImageData.covers
+                        .where((e) => e.id == 'speedboat')
+                        .map(
+                          (e) => buildInfoCard(
+                            id: e.id,
+                            title: _titleById[e.id] ?? e.id,
+                            image: e.image,
+                          ),
+                        )
+                        .toList(),
                   ),
-                  children: VehicleImageData.covers
-                      .where((e) => e.id == 'speedboat')
-                      .map(
-                        (e) => buildInfoCard(
-                          id: e.id,
-                          title: _titleById[e.id] ?? e.id,
-                          image: e.image,
-                        ),
-                      )
-                      .toList(),
                 )
               ],
             ),
@@ -118,21 +118,27 @@ class BusScreen extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            ClipRRect(
-              borderRadius: BorderRadius.circular(Dimension.border10),
-              child: Container(
-                width: double.infinity,
-                height: 100,
-                color: AppColors.borderColor,
-                child: Image.asset(
-                  image,
-                  fit: BoxFit.cover,
+            Expanded(
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(Dimension.border10),
+                child: Container(
+                  width: double.infinity,
+                  color: AppColors.borderColor,
+                  child: AspectRatio(
+                    aspectRatio: 16 / 9,
+                    child: Image.asset(
+                      image,
+                      fit: BoxFit.cover,
+                    ),
+                  ),
                 ),
               ),
             ),
             const SizedBox(height: 6),
             Text(
               title,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
               style: const TextStyle(fontSize: 16),
             ),
           ],
