@@ -128,7 +128,7 @@ class SeatController extends StateController<SeatState> {
     final seatPriceValue = double.tryParse(state.seatPrice ?? '0.0') ?? 0.0;
     final markupValue = state.markup?.value ?? 0;
     final totalSeatCount = selectedSeats.length;
-    final totalWithMarkup = (seatPriceValue * totalSeatCount) + markupValue;
+    final totalWithMarkup = (seatPriceValue + markupValue) * totalSeatCount;
     print(
         '🧾 [Seat] Confirm scheduleId=$scheduleId isReturnTrip=${state.isReturnTrip.value} seats=$selectedSeats');
     print(

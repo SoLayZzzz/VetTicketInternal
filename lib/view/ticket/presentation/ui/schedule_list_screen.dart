@@ -1,8 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
-import 'dart:io';
 import 'package:get/get.dart';
-import 'package:keyboard_actions/keyboard_actions.dart';
 import 'package:vet_internal_ticket/app_icons.dart';
 import 'package:vet_internal_ticket/theme/app_padding.dart';
 import 'package:vet_internal_ticket/view/ticket/presentation/controller/schedule_controller.dart';
@@ -10,27 +7,128 @@ import '../../../../utils/bottom_sheets/schedule_list.dart';
 import '../../../../theme/app_colors.dart';
 import '../../../../utils/dimension.dart';
 
+class _MarkupKey extends StatelessWidget {
+  final String label;
+  final VoidCallback onTap;
+
+  const _MarkupKey({
+    required this.label,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: AppColors.primaryColor,
+      borderRadius: BorderRadius.circular(12),
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(12),
+        child: Container(
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(12),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withAlpha(18),
+                blurRadius: 10,
+                offset: const Offset(0, 4),
+              ),
+            ],
+          ),
+          alignment: Alignment.center,
+          child: Text(
+            label,
+            style: const TextStyle(
+                fontSize: 22, fontWeight: FontWeight.w600, color: Colors.white),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
 class ScheduleListScreen extends GetView<ScheduleController> {
   const ScheduleListScreen({super.key});
 
-  KeyboardActionsConfig _keyboardConfig() {
-    return KeyboardActionsConfig(
-      keyboardActionsPlatform: KeyboardActionsPlatform.IOS,
-      actions: [
-        KeyboardActionsItem(
-          focusNode: controller.markupFocus,
-          displayArrows: false,
-          toolbarButtons: [
-            (node) => Padding(
-                  padding: const EdgeInsets.only(right: 8),
-                  child: TextButton(
-                    onPressed: node.unfocus,
-                    child: const Text('Done'),
+  Future<void> _showMarkupKeyboardBottomSheet() async {
+    await Get.bottomSheet(
+      Container(
+        height: 320,
+        decoration: BoxDecoration(
+          color: Colors.grey.shade100,
+          borderRadius: const BorderRadius.only(
+            topLeft: Radius.circular(16),
+            topRight: Radius.circular(16),
+          ),
+        ),
+        padding: const EdgeInsets.fromLTRB(16, 10, 16, 16),
+        child: Column(
+          children: [
+            Container(
+              width: 44,
+              height: 5,
+              decoration: BoxDecoration(
+                color: Colors.grey.shade400,
+                borderRadius: BorderRadius.circular(50),
+              ),
+            ),
+            const SizedBox(height: 10),
+            Row(
+              children: [
+                const Expanded(
+                  child: Text(
+                    'តម្លៃ Markup',
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
                   ),
                 ),
+                TextButton(
+                  onPressed: () => Get.back(),
+                  child: const Text('Done'),
+                ),
+              ],
+            ),
+            const SizedBox(height: 10),
+            Expanded(
+              child: GridView.count(
+                physics: const NeverScrollableScrollPhysics(),
+                crossAxisCount: 3,
+                crossAxisSpacing: 12,
+                mainAxisSpacing: 12,
+                childAspectRatio: 1.9,
+                children: [
+                  for (final v in const [1, 2, 3, 4, 5])
+                    _MarkupKey(
+                      label: v.toString(),
+                      onTap: () {
+                        controller.setMarkupFromInput(v);
+                        Get.back();
+                      },
+                    ),
+                  ElevatedButton(
+                    onPressed: () {
+                      controller.setMarkupFromInput(0);
+                      Get.back();
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.red,
+                      foregroundColor: Colors.white,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      elevation: 0,
+                    ),
+                    child: const Text(
+                      'Clear',
+                      style: TextStyle(fontSize: 18),
+                    ),
+                  ),
+                ],
+              ),
+            ),
           ],
         ),
-      ],
+      ),
+      isScrollControlled: true,
     );
   }
 
@@ -69,7 +167,7 @@ class ScheduleListScreen extends GetView<ScheduleController> {
       ),
       body: LayoutBuilder(
         builder: (context, constraints) {
-          final bodyContent = SizedBox(
+          return SizedBox(
             width: constraints.maxWidth,
             height: constraints.maxHeight,
             child: Column(
@@ -83,9 +181,6 @@ class ScheduleListScreen extends GetView<ScheduleController> {
               ],
             ),
           );
-
-          if (!Platform.isIOS) return bodyContent;
-          return KeyboardActions(config: _keyboardConfig(), child: bodyContent);
         },
       ),
     );
@@ -143,7 +238,6 @@ class ScheduleListScreen extends GetView<ScheduleController> {
               const SizedBox(width: 16),
               Expanded(
                 child: Container(
-                  height: Get.height / 20,
                   padding: const EdgeInsets.symmetric(horizontal: 12),
                   decoration: BoxDecoration(
                     border: Border.all(color: Colors.grey.shade400),
@@ -152,30 +246,30 @@ class ScheduleListScreen extends GetView<ScheduleController> {
                   child: Row(
                     children: [
                       Expanded(
-                        child: TextField(
-                          controller: controller.markupController,
-                          focusNode: controller.markupFocus,
-                          keyboardType: TextInputType.number,
-                          inputFormatters: [
-                            FilteringTextInputFormatter.digitsOnly,
-                          ],
-                          style: const TextStyle(
-                            color: Colors.red,
-                            fontSize: 20,
-                          ),
-                          decoration: const InputDecoration(
-                            isDense: true,
-                            border: InputBorder.none,
-                            prefixText: '\$',
-                            prefixStyle: TextStyle(
-                              color: Colors.red,
-                              fontSize: 20,
+                        child: GestureDetector(
+                          onTap: _showMarkupKeyboardBottomSheet,
+                          child: AbsorbPointer(
+                            child: TextField(
+                              controller: controller.markupController,
+                              focusNode: controller.markupFocus,
+                              readOnly: true,
+                              enableInteractiveSelection: false,
+                              keyboardType: TextInputType.none,
+                              style: const TextStyle(
+                                color: Colors.red,
+                                fontSize: 20,
+                              ),
+                              decoration: const InputDecoration(
+                                isDense: true,
+                                border: InputBorder.none,
+                                prefixText: '\$',
+                                prefixStyle: TextStyle(
+                                  color: Colors.red,
+                                  fontSize: 20,
+                                ),
+                              ),
                             ),
                           ),
-                          onChanged: (text) {
-                            final value = int.tryParse(text) ?? 0;
-                            controller.setMarkupFromInput(value);
-                          },
                         ),
                       ),
                       Column(

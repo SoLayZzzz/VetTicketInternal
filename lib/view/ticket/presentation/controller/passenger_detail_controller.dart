@@ -349,8 +349,7 @@ class PassengerDetailController extends StateController<PasengerDetailState> {
     final journeyType = booking.returnDate?.isNotEmpty == true ? '2' : '1';
 
     final totalSeats = allSeats.length;
-    final double perSeatMarkup =
-        totalSeats > 0 ? booking.markup / totalSeats : 0;
+    final double perSeatMarkup = booking.markup.toDouble();
 
     final seatPrices = [
       ...List.filled(

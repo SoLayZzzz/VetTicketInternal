@@ -539,88 +539,94 @@ class _TransactionScreenState extends State<TransactionScreen>
   /// ✅ Updated Bottom Buttons: Print & Share
   _buttonBottomBar() {
     return SafeArea(
-        child: Container(
-      decoration: const BoxDecoration(
-        boxShadow: [
-          BoxShadow(
-            color: Colors.grey,
-            blurRadius: 1,
-            offset: Offset(0, -2),
-          )
-        ],
-      ),
-      child: BottomAppBar(
-        height: Get.height / 5.5,
-        color: Colors.white,
-        child: Column(
-          children: [
-            // Printer selection button
-            Obx(() => Button(
-                  color: AppColors.whiteColor,
-                  borderRadius: BorderRadius.circular(5),
-                  border: Border.all(width: 1.5, color: AppColors.primaryColor),
-                  onTap: _printViaBluetooth,
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(
-                        Icons.print,
-                        color: AppColors.primaryColor,
-                        size: 20,
-                      ),
-                      SizedBox(width: 8),
-                      Flexible(
-                        child: Text(
-                          controller.uiState.value.selectedPrinter.value.isEmpty
-                              ? "ជ្រើសរើសម៉ាសុីនព្រីន"
-                              : controller.uiState.value.selectedPrinter.value,
-                          style: TextStyle(
-                            color: AppColors.primaryColor,
-                            fontSize: 14,
-                            fontWeight: FontWeight.w500,
-                          ),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ),
-                    ],
-                  ),
-                )),
-            SizedBox(height: 10),
-            // Print button
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
-                Expanded(
-                  child: Button(
-                    borderRadius: BorderRadius.circular(5),
-                    color: AppColors.primaryColor,
-                    onTap: () async {
-                      await _printReceiptThenSeat();
-                      // Get.offAllNamed(AppRoutes.homeScreen);
-                    },
-                    child:
-                        TextSmall(text: "ព្រីន", color: AppColors.whiteColor),
-                  ),
-                ),
-                SizedBox(width: 10),
-
-                // Share to another app
-                Expanded(
-                  child: Button(
-                    borderRadius: BorderRadius.circular(5),
-                    color: Colors.green,
-                    // onTap: () async {
-                    //   await _sharePdf();
-                    // },
-                    onTap: _openTelegram,
-                    child: TextSmall(
-                        text: "ចែករំលែក", color: AppColors.whiteColor),
-                  ),
-                ),
-              ],
+        child: Padding(
+      padding: const EdgeInsets.only(bottom: 10),
+      child: Container(
+        decoration: const BoxDecoration(
+          boxShadow: [
+            BoxShadow(
+              color: Colors.grey,
+              blurRadius: 1,
+              offset: Offset(0, -2),
             )
           ],
+        ),
+        child: BottomAppBar(
+          height: Get.height / 4.8,
+          color: Colors.white,
+          child: Column(
+            children: [
+              // Printer selection button
+              Obx(() => Button(
+                    color: AppColors.whiteColor,
+                    borderRadius: BorderRadius.circular(5),
+                    border:
+                        Border.all(width: 1.5, color: AppColors.primaryColor),
+                    onTap: _printViaBluetooth,
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(
+                          Icons.print,
+                          color: AppColors.primaryColor,
+                          size: 20,
+                        ),
+                        SizedBox(width: 8),
+                        Flexible(
+                          child: Text(
+                            controller
+                                    .uiState.value.selectedPrinter.value.isEmpty
+                                ? "ជ្រើសរើសម៉ាសុីនព្រីន"
+                                : controller
+                                    .uiState.value.selectedPrinter.value,
+                            style: TextStyle(
+                              color: AppColors.primaryColor,
+                              fontSize: 14,
+                              fontWeight: FontWeight.w500,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                      ],
+                    ),
+                  )),
+              SizedBox(height: 10),
+              // Print button
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  Expanded(
+                    child: Button(
+                      borderRadius: BorderRadius.circular(5),
+                      color: AppColors.primaryColor,
+                      onTap: () async {
+                        await _printReceiptThenSeat();
+                        // Get.offAllNamed(AppRoutes.homeScreen);
+                      },
+                      child:
+                          TextSmall(text: "ព្រីន", color: AppColors.whiteColor),
+                    ),
+                  ),
+                  SizedBox(width: 10),
+
+                  // Share to another app
+                  Expanded(
+                    child: Button(
+                      borderRadius: BorderRadius.circular(5),
+                      color: Colors.green,
+                      // onTap: () async {
+                      //   await _sharePdf();
+                      // },
+                      onTap: _openTelegram,
+                      child: TextSmall(
+                          text: "ចែករំលែក", color: AppColors.whiteColor),
+                    ),
+                  ),
+                ],
+              )
+            ],
+          ),
         ),
       ),
     ));

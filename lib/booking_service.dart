@@ -50,7 +50,8 @@ class TripBookingData {
     final returnPrice = double.tryParse(returnSeatPrice ?? '0.0') ?? 0.0;
     final goTotal = goPrice * goSelectedSeats.length;
     final returnTotal = returnPrice * returnSelectedSeats.length;
-    totalPrice = goTotal + returnTotal + markup;
+    final totalSeats = goSelectedSeats.length + returnSelectedSeats.length;
+    totalPrice = goTotal + returnTotal + (markup * totalSeats);
   }
 
   void clear() {
