@@ -4,9 +4,13 @@ import static com.vet_internal_ticket.KmSend.getSeconds;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothSocket;
+import android.content.ActivityNotFoundException;
+import android.content.ClipData;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.net.Uri;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
@@ -22,6 +26,7 @@ import android.Manifest;
 import androidx.annotation.NonNull;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
+import androidx.core.content.FileProvider;
 import com.hztytech.printer.sdk.km_blebluetooth.KmBlebluetooth;
 import com.hztytech.printer.sdk.km_blebluetooth.KmBlebluetoothAdapter;
 import com.hztytech.printer.sdk.km_bluetooth.Kmbluetooth;
@@ -30,6 +35,8 @@ import io.flutter.embedding.android.FlutterActivity;
 import io.flutter.embedding.engine.FlutterEngine;
 import io.flutter.plugin.common.EventChannel;
 import io.flutter.plugin.common.MethodChannel;
+import java.io.File;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
@@ -39,6 +46,7 @@ public class MainActivity extends FlutterActivity {
     private static final String CHANNEL = "com.udaya.bluetooth";
     private static final String STREAM = "com.udaya.bluetooth.stream";
     private static final String FOCUS_STREAM = "com.udaya.keyboard.focus";
+    private static final String SHARE_CHANNEL = "com.vet_internal_ticket/share";
     private static final int BLUETOOTH_PERMISSION_REQUEST_CODE = 100;
 
     private Kmbluetooth kmBluetooth;
@@ -235,6 +243,98 @@ public class MainActivity extends FlutterActivity {
                     }
                     if (call.method.equals("isBluetoothReady")) {
                         result.success(isBluetoothReady());
+                    }
+                });
+
+        new MethodChannel(flutterEngine.getDartExecutor().getBinaryMessenger(), SHARE_CHANNEL)
+                .setMethodCallHandler((call, result) -> {
+                    if (call.method.equals("shareToTelegram")) {
+                        try {
+                            ArrayList<String> paths = call.argument("paths");
+                            String text = call.argument("text");
+
+                            if (paths == null || paths.isEmpty()) {
+                                result.error("INVALID_ARGUMENT", "paths is empty", null);
+                                return;
+                            }
+
+                            String telegramPackage = null;
+                            String[] telegramCandidates = new String[] {
+                                    "org.telegram.messenger",
+                                    "org.telegram.messenger.beta",
+                                    "org.telegram.messenger.web",
+                                    "org.thunderdog.challegram"
+                            };
+                            for (String pkg : telegramCandidates) {
+                                if (getPackageManager().getLaunchIntentForPackage(pkg) != null) {
+                                    telegramPackage = pkg;
+                                    break;
+                                }
+                            }
+                            if (telegramPackage == null) {
+                                result.error("TELEGRAM_NOT_INSTALLED", "Telegram is not installed", null);
+                                return;
+                            }
+
+                            ArrayList<Uri> uris = new ArrayList<>();
+                            for (String p : paths) {
+                                if (p == null) continue;
+                                File f = new File(p);
+                                if (!f.exists()) continue;
+                                Uri uri = FileProvider.getUriForFile(
+                                        this,
+                                        getApplicationContext().getPackageName() + ".flutter.share_provider",
+                                        f
+                                );
+                                uris.add(uri);
+                            }
+
+                            if (uris.isEmpty()) {
+                                result.error("INVALID_ARGUMENT", "No valid files to share", null);
+                                return;
+                            }
+
+                            Intent intent;
+                            if (uris.size() == 1) {
+                                intent = new Intent(Intent.ACTION_SEND);
+                                intent.setType("image/*");
+                                intent.putExtra(Intent.EXTRA_STREAM, uris.get(0));
+                            } else {
+                                intent = new Intent(Intent.ACTION_SEND_MULTIPLE);
+                                intent.setType("image/*");
+                                intent.putParcelableArrayListExtra(Intent.EXTRA_STREAM, uris);
+                            }
+
+                            if (text != null && !text.isEmpty()) {
+                                intent.putExtra(Intent.EXTRA_TEXT, text);
+                            }
+
+                            ClipData clipData = ClipData.newUri(getContentResolver(), "transaction", uris.get(0));
+                            for (int i = 1; i < uris.size(); i++) {
+                                clipData.addItem(new ClipData.Item(uris.get(i)));
+                            }
+                            intent.setClipData(clipData);
+
+                            intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+                            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                            intent.setPackage(telegramPackage);
+
+                            for (Uri uri : uris) {
+                                grantUriPermission(telegramPackage, uri, Intent.FLAG_GRANT_READ_URI_PERMISSION);
+                            }
+
+                            try {
+                                startActivity(intent);
+                            } catch (ActivityNotFoundException e) {
+                                result.error("SHARE_ERROR", "Telegram activity not found", null);
+                                return;
+                            }
+                            result.success(true);
+                        } catch (Exception e) {
+                            result.error("SHARE_ERROR", e.getMessage(), null);
+                        }
+                    } else {
+                        result.notImplemented();
                     }
                 });
 

@@ -65,8 +65,8 @@ flutter:
 flutter_launcher_icons:
   android: true
   ios: true
-  image_path: "assets/images/VET Ticket-02.png"
-  adaptive_icon_foreground: "assets/images/VET Ticket-02.png"
+  image_path: "assets/images/VET 3.png"
+  adaptive_icon_foreground: "assets/images/VET 3.png"
   adaptive_icon_background: "#FFFFFF"
   remove_alpha_ios: true
 

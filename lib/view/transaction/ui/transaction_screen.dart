@@ -12,6 +12,7 @@ import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:permission_handler/permission_handler.dart';
 import 'package:printing/printing.dart';
+import 'package:flutter/services.dart';
 
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -47,6 +48,83 @@ class _TransactionScreenState extends State<TransactionScreen>
   final GlobalKey _seatQrKey = GlobalKey();
   final GlobalKey _goTransactionKey = GlobalKey();
   final GlobalKey _returnTransactionKey = GlobalKey();
+
+  bool _isSharing = false;
+
+  static const MethodChannel _shareChannel =
+      MethodChannel('com.vet_internal_ticket/share');
+
+  Future<List<XFile>> _buildTransactionShareFiles() async {
+    final dir = await getTemporaryDirectory();
+    final now = DateTime.now();
+
+    final baseName =
+        "${now.year}${_twoDigits(now.month)}${_twoDigits(now.day)}${_twoDigits(now.hour)}${_twoDigits(now.minute)}${_twoDigits(now.second)}";
+
+    final List<XFile> files = [];
+
+    final goBytes = await _capturePngFromKey(_goTransactionKey);
+    final goPath = '${dir.path}/${baseName}_go.png';
+    await File(goPath).writeAsBytes(goBytes);
+    files.add(XFile(goPath));
+
+    final ticketList =
+        controller.state.bookingTransactonModel.value?.body?.ticket;
+    final hasReturn = ticketList != null && ticketList.length > 1;
+
+    if (hasReturn && _returnTransactionKey.currentContext != null) {
+      final returnBytes = await _capturePngFromKey(_returnTransactionKey);
+      final returnPath = '${dir.path}/${baseName}_back.png';
+      await File(returnPath).writeAsBytes(returnBytes);
+      files.add(XFile(returnPath));
+    }
+
+    return files;
+  }
+
+  Future<void> _shareTransactionToTelegram() async {
+    if (_isSharing) return;
+    _isSharing = true;
+    try {
+      final files = await _buildTransactionShareFiles();
+      if (files.isEmpty) {
+        throw Exception('No files to share');
+      }
+
+      if (Platform.isAndroid) {
+        await _shareChannel.invokeMethod('shareToTelegram', {
+          'paths': files.map((f) => f.path).toList(),
+          'text': '',
+        });
+      } else {
+        // ignore: deprecated_member_use
+        await Share.shareXFiles(files);
+      }
+    } on PlatformException catch (e) {
+      print(
+          '🔴 Telegram share PlatformException: ${e.code} ${e.message} ${e.details}');
+      try {
+        // ignore: deprecated_member_use
+        await Share.shareXFiles(await _buildTransactionShareFiles());
+      } catch (_) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+                content: Text('Could not share transaction: ${e.message}')),
+          );
+        }
+      }
+    } catch (e) {
+      print('🔴 Telegram share error: $e');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Could not share transaction: $e')),
+        );
+      }
+    } finally {
+      _isSharing = false;
+    }
+  }
 
   void _handleBackToTicketMenu() {
     Get.find<BookingService>().reset();
@@ -271,57 +349,38 @@ class _TransactionScreenState extends State<TransactionScreen>
   }
 
   Future<Uint8List> _capturePngFromKey(GlobalKey key) async {
-    final boundary =
-        key.currentContext?.findRenderObject() as RenderRepaintBoundary?;
-
-    if (boundary == null) {
-      throw Exception('Capture target not found');
-    }
-
-    if (boundary.debugNeedsPaint) {
-      await Future.delayed(const Duration(milliseconds: 50));
-    }
-
-    final image = await boundary.toImage(pixelRatio: 3.0);
-    final byteData = await image.toByteData(format: ui.ImageByteFormat.png);
-    return byteData!.buffer.asUint8List();
-  }
-
-  Future<void> _shareTransactionImage() async {
-    try {
-      final dir = await getTemporaryDirectory();
-      final now = DateTime.now();
-
-      final baseName =
-          "${now.year}${_twoDigits(now.month)}${_twoDigits(now.day)}${_twoDigits(now.hour)}${_twoDigits(now.minute)}${_twoDigits(now.second)}";
-
-      final List<XFile> files = [];
-
-      final goBytes = await _capturePngFromKey(_goTransactionKey);
-      final goPath = '${dir.path}/${baseName}_go.png';
-      await File(goPath).writeAsBytes(goBytes);
-      files.add(XFile(goPath));
-
-      final ticketList =
-          controller.state.bookingTransactonModel.value?.body?.ticket;
-      final hasReturn = ticketList != null && ticketList.length > 1;
-
-      if (hasReturn && _returnTransactionKey.currentContext != null) {
-        final returnBytes = await _capturePngFromKey(_returnTransactionKey);
-        final returnPath = '${dir.path}/${baseName}_back.png';
-        await File(returnPath).writeAsBytes(returnBytes);
-        files.add(XFile(returnPath));
+    Object? lastError;
+    for (int attempt = 0; attempt < 3; attempt++) {
+      final ctx = key.currentContext;
+      if (ctx == null) {
+        await WidgetsBinding.instance.endOfFrame;
+        await Future.delayed(const Duration(milliseconds: 80));
+        continue;
       }
 
-      // ignore: deprecated_member_use
-      await Share.shareXFiles(files);
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Could not share transaction: $e')),
-        );
+      await WidgetsBinding.instance.endOfFrame;
+      await Future.delayed(const Duration(milliseconds: 80));
+
+      final boundary = ctx.findRenderObject() as RenderRepaintBoundary?;
+      if (boundary == null) {
+        lastError = Exception('Capture target not found');
+        continue;
+      }
+
+      try {
+        final image = await boundary.toImage(pixelRatio: 3.0);
+        final byteData = await image.toByteData(format: ui.ImageByteFormat.png);
+        if (byteData == null) {
+          lastError = Exception('Failed to encode captured image');
+          continue;
+        }
+        return byteData.buffer.asUint8List();
+      } catch (e) {
+        lastError = e;
       }
     }
+
+    throw Exception(lastError ?? 'Capture failed');
   }
 
   @override
@@ -667,7 +726,7 @@ class _TransactionScreenState extends State<TransactionScreen>
                       // onTap: () async {
                       //   await _sharePdf();
                       // },
-                      onTap: _shareTransactionImage,
+                      onTap: _shareTransactionToTelegram,
                       child: TextSmall(
                           text: "ចែករំលែក", color: AppColors.whiteColor),
                     ),

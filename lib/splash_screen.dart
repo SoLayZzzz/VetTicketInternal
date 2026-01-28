@@ -24,7 +24,7 @@ class _SplashScreenState extends State<SplashScreen> {
   @override
   void initState() {
     super.initState();
-    Future.delayed(const Duration(milliseconds: 1500), _verifySession);
+    WidgetsBinding.instance.addPostFrameCallback((_) => _verifySession());
   }
 
   Future<void> _verifySession() async {
@@ -58,7 +58,7 @@ class _SplashScreenState extends State<SplashScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: Center(
-        child: Image.asset(AppImages.APP_LOGO_1, width: 250),
+        child: Image.asset(AppImages.APP_LOGO_2, width: 250),
       ),
     );
   }
