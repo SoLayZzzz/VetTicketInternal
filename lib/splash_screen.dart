@@ -39,7 +39,12 @@ class _SplashScreenState extends State<SplashScreen> {
 
     if (accessToken != null) {
       try {
-        await Get.find<AuthController>().loginCheckToken();
+        final ok = await Get.find<AuthController>().loginCheckToken();
+
+        if (!ok) {
+          Get.offAllNamed(AppRoutes.loginScreen);
+          return;
+        }
 
         // ✅ Navigate only if not already on Home
         if (Get.currentRoute != AppRoutes.homeScreen) {

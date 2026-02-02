@@ -95,7 +95,7 @@ class PassengerDetailController extends StateController<PasengerDetailState> {
     });
 
     fetchStations();
-    getNational();
+    // getNational();
   }
 
   void getAgument({
@@ -182,23 +182,23 @@ class PassengerDetailController extends StateController<PasengerDetailState> {
     }
   }
 
-  Future<void> getNational() async {
-    uiState.value.isSelectingNationality.value = true;
-    uiState.value.errorMessage.value = '';
-    try {
-      final response = await passengerUscase.getNational();
-      uiState.value.national.value = response;
+  // Future<void> getNational() async {
+  //   uiState.value.isSelectingNationality.value = true;
+  //   uiState.value.errorMessage.value = '';
+  //   try {
+  //     final response = await passengerUscase.getNational();
+  //     uiState.value.national.value = response;
 
-      if (response.body?.data != null) {
-        final names = response.body!.data!.map((d) => d.name ?? '').toList();
-        uiState.value.nationalityNames.assignAll(names);
-      }
-    } catch (e) {
-      uiState.value.errorMessage.value = e.toString();
-    } finally {
-      uiState.value.isSelectingNationality.value = false;
-    }
-  }
+  //     if (response.body?.data != null) {
+  //       final names = response.body!.data!.map((d) => d.name ?? '').toList();
+  //       uiState.value.nationalityNames.assignAll(names);
+  //     }
+  //   } catch (e) {
+  //     uiState.value.errorMessage.value = e.toString();
+  //   } finally {
+  //     uiState.value.isSelectingNationality.value = false;
+  //   }
+  // }
 
   void validateAndSubmit() {
     final con = uiState.value;

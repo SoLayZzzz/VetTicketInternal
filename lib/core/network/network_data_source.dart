@@ -20,10 +20,16 @@ class NetworkDataSource extends GetConnect {
   NetworkDataSource(this._userRepository, this._authStorage);
 
   @override
-  void onInit() async {
+  void onInit() {
+    httpClient.timeout = const Duration(seconds: 30);
+
     httpClient.addRequestModifier<dynamic>((request) async {
       // ✅ Add Authorization header if token exists (skip login API)
-      if (!request.url.path.endsWith('auth/login')) {
+      final path = request.url.path;
+      final shouldAttachAuth = !(path.endsWith('auth/login') ||
+          path.endsWith('auth/login-with-refresh-token'));
+
+      if (shouldAttachAuth) {
         final tokenType = _userRepository.loginResponse().tokenType ?? 'Bearer';
         // final accessToken = await _appPref.getUserToken();
         final accessToken = _authStorage.getAccessTOKEN();
@@ -39,7 +45,7 @@ class NetworkDataSource extends GetConnect {
 
       // ✅ Append base URL
       const baseUrl = BaseUrl.baseUrlTest;
-      final newUrl = Uri.parse('$baseUrl${request.url.path}');
+      final newUrl = Uri.parse(baseUrl).resolve(request.url.path);
       final query = request.url.queryParameters;
 
       return request.copyWith(url: newUrl.replace(queryParameters: query));
@@ -121,7 +127,8 @@ class NetworkDataSource extends GetConnect {
       return res.body;
     }
 
-    throw ApiError(res.bodyString, res.statusCode);
+    final message = res.bodyString ?? res.statusText;
+    throw ApiError(message, res.statusCode);
   }
 
   Future<void> saveAccessToken(String accessToken) async {

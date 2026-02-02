@@ -185,7 +185,7 @@ class AuthController extends StateController<AuthState> {
   // ---------------------------
   // ✅ LOGIN WITH REFRESH TOKEN
   // ---------------------------
-  Future<void> loginRefreshToken() async {
+  Future<bool> loginRefreshToken() async {
     try {
       uiState.update((val) => val?.isLoading = true);
 
@@ -196,7 +196,7 @@ class AuthController extends StateController<AuthState> {
       if (refreshToken == null) {
         print("⚠️ No refresh token found, redirecting to login.");
         await logOut();
-        return;
+        return false;
       }
 
       final body = LoginRefreshTokenBodyRequest(
@@ -214,13 +214,16 @@ class AuthController extends StateController<AuthState> {
         _authRepository.userRepository.setLoginRefreshToken(response.body!);
 
         print("✅ Token refreshed successfully");
+        return true;
       } else {
         print("❌ Refresh token failed, logging out.");
         await logOut();
+        return false;
       }
     } catch (e) {
       print("❌ Exception during refresh token: $e");
       await logOut();
+      return false;
     } finally {
       uiState.update((val) => val?.isLoading = false);
     }
@@ -262,7 +265,7 @@ class AuthController extends StateController<AuthState> {
   // ---------------------------
   // ✅ CHECK TOKEN
   // ---------------------------
-  Future<void> loginCheckToken() async {
+  Future<bool> loginCheckToken() async {
     try {
       uiState.update((val) => val?.isLoading = true);
       final response = await _authRepository.loginCheckToken();
@@ -270,12 +273,25 @@ class AuthController extends StateController<AuthState> {
       if (response != null && response.statusCode == 200) {
         print("✅ Token check response: ${response.body?.body}");
         _authRepository.userRepository.setLoginCheckToken();
+        return true;
       } else {
         print("⚠️ Token check failed, trying refresh...");
-        await loginRefreshToken();
+        final refreshed = await loginRefreshToken();
+        if (!refreshed) {
+          return false;
+        }
+
+        final retry = await _authRepository.loginCheckToken();
+        if (retry != null && retry.statusCode == 200) {
+          _authRepository.userRepository.setLoginCheckToken();
+          return true;
+        }
+
+        return false;
       }
     } catch (e) {
       print("❌ Exception in token check: $e");
+      return false;
     } finally {
       uiState.update((val) => val?.isLoading = false);
     }
