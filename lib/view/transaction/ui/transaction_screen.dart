@@ -752,8 +752,8 @@ class _TransactionScreenState extends State<TransactionScreen>
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            RepaintBoundary(key: _recipKey, child: _buildRecip(ticket)),
-            RepaintBoundary(key: _seatQrKey, child: _buildQRSeat(ticket)),
+            RepaintBoundary(key: _recipKey, child: _buildRecip(ticket, true)),
+            RepaintBoundary(key: _seatQrKey, child: _buildQRSeat(ticket, true)),
           ],
         ),
       ),
@@ -774,15 +774,15 @@ class _TransactionScreenState extends State<TransactionScreen>
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            _buildRecip(ticket),
-            _buildQRSeat(ticket),
+            _buildRecip(ticket, false),
+            _buildQRSeat(ticket, false),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildRecip(dynamic ticket) {
+  Widget _buildRecip(dynamic ticket, bool isGo) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 5, horizontal: 5),
       child: Container(
@@ -802,8 +802,8 @@ class _TransactionScreenState extends State<TransactionScreen>
         child: Column(
           children: [
             _buildTitle(ticket),
-            _buildTable(ticket),
-            _buildTableTwo(ticket),
+            _buildTable(ticket, isGo),
+            _buildTableTwo(ticket, isGo),
             _buildDetail(ticket),
           ],
         ),
@@ -811,13 +811,26 @@ class _TransactionScreenState extends State<TransactionScreen>
     );
   }
 
-  Widget _buildQRSeat(dynamic ticket) {
+  Widget _buildQRSeat(dynamic ticket, bool isGo) {
     final transactionId =
         controller.state.bookingTransactonModel.value?.body?.transactionId ??
             '';
 
     final seatLabels =
         (ticket?.seatLabel ?? "").split(",").map((s) => s.trim()).toList();
+
+    final String cleanUnitPriceStr = (ticket?.seatUnitPrice ?? "").replaceAll(RegExp(r'[^\d.]'), '');
+    final rawUnitPrice = double.tryParse(cleanUnitPriceStr) ?? 
+                         (isGo 
+                             ? (double.tryParse(controller.state.goSeatPrice ?? '') ?? 0.0) 
+                             : (double.tryParse(controller.state.returnSeatPrice ?? '') ?? 0.0));
+    final double unitPriceVal;
+    if (isGo) {
+      unitPriceVal = rawUnitPrice + controller.state.goMarkup;
+    } else {
+      unitPriceVal = rawUnitPrice + controller.state.returnMarkup;
+    }
+    final amountStr = "${unitPriceVal.toStringAsFixed(2).replaceAll(RegExp(r'\.00$'), '')} \$";
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -834,7 +847,7 @@ class _TransactionScreenState extends State<TransactionScreen>
               "${ticket?.destinationFrom ?? ""} → ${ticket?.destinationTo ?? ""}",
           "boardingPoint": ticket?.boardingPoint ?? "",
           "dropOffPoint": ticket?.dropOffPoint ?? "",
-          "amount": ticket?.seatUnitPrice ?? "",
+          "amount": amountStr,
         };
 
         // final qrData = qrDataMap.toString();
@@ -1035,7 +1048,25 @@ class _TransactionScreenState extends State<TransactionScreen>
     );
   }
 
-  Widget _buildTable(dynamic ticket) {
+  Widget _buildTable(dynamic ticket, bool isGo) {
+    final String cleanUnitPriceStr = (ticket?.seatUnitPrice ?? "").replaceAll(RegExp(r'[^\d.]'), '');
+    final rawUnitPrice = double.tryParse(cleanUnitPriceStr) ?? 
+                         (isGo 
+                             ? (double.tryParse(controller.state.goSeatPrice ?? '') ?? 0.0) 
+                             : (double.tryParse(controller.state.returnSeatPrice ?? '') ?? 0.0));
+    final double unitPriceVal;
+    if (isGo) {
+      unitPriceVal = rawUnitPrice + controller.state.goMarkup;
+    } else {
+      unitPriceVal = rawUnitPrice + controller.state.returnMarkup;
+    }
+
+    final totalSeatCount = ticket?.totalSeat ?? 1;
+    final amountVal = unitPriceVal * totalSeatCount;
+
+    final unitPriceStr = "${unitPriceVal.toStringAsFixed(2).replaceAll(RegExp(r'\.00$'), '')} \$";
+    final amountStr = "${amountVal.toStringAsFixed(2).replaceAll(RegExp(r'\.00$'), '')} \$";
+
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: Dimension.padding10),
       child: Table(
@@ -1056,26 +1087,42 @@ class _TransactionScreenState extends State<TransactionScreen>
           ]),
           _buildRow([
             ticket?.seatLabel ?? "",
-            "${ticket?.totalSeat ?? 1}",
-            ticket?.seatUnitPrice ?? "",
-            ticket?.totalAmount ?? "",
+            "$totalSeatCount",
+            unitPriceStr,
+            amountStr,
           ]),
         ],
       ),
     );
   }
 
-  Widget _buildTableTwo(dynamic ticket) {
+  Widget _buildTableTwo(dynamic ticket, bool isGo) {
+    final String cleanUnitPriceStr = (ticket?.seatUnitPrice ?? "").replaceAll(RegExp(r'[^\d.]'), '');
+    final rawUnitPrice = double.tryParse(cleanUnitPriceStr) ?? 
+                         (isGo 
+                             ? (double.tryParse(controller.state.goSeatPrice ?? '') ?? 0.0) 
+                             : (double.tryParse(controller.state.returnSeatPrice ?? '') ?? 0.0));
+    final double unitPriceVal;
+    if (isGo) {
+      unitPriceVal = rawUnitPrice + controller.state.goMarkup;
+    } else {
+      unitPriceVal = rawUnitPrice + controller.state.returnMarkup;
+    }
+
+    final totalSeatCount = ticket?.totalSeat ?? 1;
+    final amountVal = unitPriceVal * totalSeatCount;
+    final amountStr = "${amountVal.toStringAsFixed(2).replaceAll(RegExp(r'\.00$'), '')} \$";
+
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: Dimension.padding10),
       child: Table(
         border: TableBorder.all(color: Colors.black),
         defaultVerticalAlignment: TableCellVerticalAlignment.middle,
         children: [
-          _buildMergedRow('តម្លៃសរុប/Total', ticket?.totalAmount ?? ""),
+          _buildMergedRow('តម្លៃសរុប/Total', amountStr),
           _buildMergedRow('បញ្ចុះតម្លៃ/Discount USD', '0\$'),
           _buildMergedRow(
-              'សរុបចុងក្រោយ/Grand Total USD', ticket?.totalAmount ?? ""),
+              'សរុបចុងក្រោយ/Grand Total USD', amountStr),
           _buildMergedRow(
               'សរុបចុងក្រោយ/Grand Total Riel', ticket?.totalRiel ?? ""),
         ],

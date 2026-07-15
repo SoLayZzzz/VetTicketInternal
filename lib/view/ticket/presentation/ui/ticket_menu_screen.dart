@@ -112,7 +112,7 @@ class TicketMenuScreen extends GetView<TicketMenuController> {
             titleTextField: "ទិសដៅពី",
             text: controller.uiState.value.selectedFromName,
             locationList: locationList,
-            assetImage: const AssetImage(AppIcons.IC_navigation),
+          assetImage: const AssetImage(AppIcons.IC_navigation),
             showChooseScreen: true,
             borderRadius: BorderRadius.circular(5),
             borderColor: Colors.black,

@@ -10,6 +10,11 @@ class BookingState {
   double totalPrice = 0.0;
   String totalSeat = '';
 
+  int goMarkup = 0;
+  int returnMarkup = 0;
+  String? goSeatPrice;
+  String? returnSeatPrice;
+
   Rx<BookingCheckTransactionModel?> bookingTransactonModel =
       Rx<BookingCheckTransactionModel?>(null);
 

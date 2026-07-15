@@ -50,6 +50,7 @@ class MyApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       getPages: getPages,
       initialRoute: AppRoutes.splashScreen,
+      // initialRoute: AppRoutes.homeScreen,
       initialBinding: AppBinding(),
     );
   }

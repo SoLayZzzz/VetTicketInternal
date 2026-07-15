@@ -20,7 +20,7 @@ class SelectSeatScreen extends GetView<SeatController> {
       backgroundColor: AppColors.primaryPurple,
       appBar: appBarDefault(
         title: "ជ្រើសរើសកៅអីធ្វើដំណើរ",
-        onPressed: () => controller.goBackToSchedule(),
+        onPressed: () => Get.back(result: 'cancelled'),
       ),
       body: Padding(
         padding: const EdgeInsets.symmetric(horizontal: AppPadding.medium),

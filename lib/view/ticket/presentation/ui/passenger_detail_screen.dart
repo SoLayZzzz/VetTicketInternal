@@ -92,6 +92,7 @@ class PassengerDetailScreen extends GetView<PassengerDetailController> {
       downStation: uiState.goDropStation.value,
       seats: uiState.selectedSeats,
       isFirstSection: true,
+      isGo: true,
       boardingList: uiState.goBoardingStationList,
       dropList: uiState.goDropStationList,
     );
@@ -108,6 +109,7 @@ class PassengerDetailScreen extends GetView<PassengerDetailController> {
       downStation: uiState.returnDropStation.value,
       seats: uiState.selectedSeatback,
       isFirstSection: true,
+      isGo: false,
       boardingList: uiState.returnBoardingStationList,
       dropList: uiState.returnDropStationList,
     );
@@ -121,6 +123,7 @@ class PassengerDetailScreen extends GetView<PassengerDetailController> {
     required BoardingResponse? downStation,
     required List<Map<String, String>> seats,
     required bool isFirstSection,
+    required bool isGo,
     required String title,
     required List<BoardingResponse> boardingList,
     required List<BoardingResponse> dropList,
@@ -167,11 +170,24 @@ class PassengerDetailScreen extends GetView<PassengerDetailController> {
           height: AppPadding.medium,
         ),
         if (isFirstSection) ...[
-          Obx(() =>
-              _buildCustomerContactInfo(uistate.showPhoneError.value, title)),
+          Obx(() {
+            final phoneCtrl = isGo ? uistate.phoneController : uistate.phoneBackController;
+            final hasErr = isGo
+                ? (uistate.hasSubmitted.value && uistate.showPhoneError.value)
+                : (uistate.hasSubmitted.value && uistate.showPhoneErrorBack.value);
+            final errMsg = isGo
+                ? uistate.phoneErrorMessage.value
+                : uistate.phoneErrorMessageBack.value;
+            return _buildCustomerContactInfo(
+              phoneController: phoneCtrl,
+              hasError: hasErr,
+              title: title,
+              errorMessage: errMsg,
+            );
+          }),
           // _buildNationalitySelector(),
         ],
-        _buildDataListCustomer(seats),
+        _buildDataListCustomer(seats, isGo),
         const SizedBox(height: 10),
       ],
     );
@@ -287,7 +303,12 @@ class PassengerDetailScreen extends GetView<PassengerDetailController> {
     );
   }
 
-  Widget _buildCustomerContactInfo(bool showPhoneError, String title) {
+  Widget _buildCustomerContactInfo({
+    required TextEditingController phoneController,
+    required bool hasError,
+    required String title,
+    required String errorMessage,
+  }) {
     return Padding(
       padding:
           const EdgeInsets.symmetric(horizontal: AppPadding.large, vertical: 5),
@@ -308,79 +329,65 @@ class PassengerDetailScreen extends GetView<PassengerDetailController> {
               ),
             ),
           ),
-          Obx(() {
-            final state = controller.uiState.value;
-            final hasError =
-                state.hasSubmitted.value && state.showPhoneError.value;
-
-            return TextFormField(
-              controller: state.phoneController,
-              focusNode: controller.phoneFocus, // attach the focus
-              keyboardType: TextInputType.number,
-              inputFormatters: [
-                FilteringTextInputFormatter.digitsOnly,
-                LengthLimitingTextInputFormatter(10),
-                const _LeadingZeroPhoneFormatter(),
-              ],
-              textInputAction: TextInputAction.done,
-              onFieldSubmitted: (_) => FocusScope.of(Get.context!).unfocus(),
-              decoration: InputDecoration(
-                contentPadding: const EdgeInsets.symmetric(vertical: 18),
-                isDense: true,
-                prefixIcon: const Padding(
-                  padding: EdgeInsets.all(11),
-                  child: Image(
-                    image: AssetImage(AppIcons.IC_phone),
-                    width: 5,
-                  ),
-                ),
-                hintText: 'លេខទូរស័ព្ទ',
-                enabledBorder: OutlineInputBorder(
-                  borderSide: BorderSide(
-                    color: hasError ? Colors.red : Colors.black.withAlpha(100),
-                    width: 1.0,
-                  ),
-                ),
-                focusedBorder: OutlineInputBorder(
-                  borderSide: BorderSide(
-                    color: hasError ? Colors.red : Colors.black.withAlpha(100),
-                    width: 1.0,
-                  ),
-                ),
-                errorBorder: const OutlineInputBorder(
-                  borderSide: BorderSide(color: Colors.red, width: 1.0),
-                ),
-                border: OutlineInputBorder(
-                  borderSide: BorderSide(
-                    color: hasError ? Colors.red : Colors.black.withAlpha(100),
-                    width: 1.0,
-                  ),
+          TextFormField(
+            controller: phoneController,
+            focusNode: phoneController == controller.uiState.value.phoneController ? controller.phoneFocus : null,
+            keyboardType: TextInputType.number,
+            inputFormatters: [
+              FilteringTextInputFormatter.digitsOnly,
+              LengthLimitingTextInputFormatter(10),
+              const _LeadingZeroPhoneFormatter(),
+            ],
+            textInputAction: TextInputAction.done,
+            onFieldSubmitted: (_) => FocusScope.of(Get.context!).unfocus(),
+            decoration: InputDecoration(
+              contentPadding: const EdgeInsets.symmetric(vertical: 18),
+              isDense: true,
+              prefixIcon: const Padding(
+                padding: EdgeInsets.all(11),
+                child: Image(
+                  image: AssetImage(AppIcons.IC_phone),
+                  width: 5,
                 ),
               ),
-            );
-          }),
-          Obx(() {
-            final state = controller.uiState.value;
-            final hasError =
-                state.hasSubmitted.value && state.showPhoneError.value;
-            if (!hasError) return const SizedBox.shrink();
-            final message = state.phoneErrorMessage.value.isNotEmpty
-                ? state.phoneErrorMessage.value
-                : 'សូមបំពេញលេខទូរស័ព្ទ';
-            return Padding(
+              hintText: 'លេខទូរស័ព្ទ',
+              enabledBorder: OutlineInputBorder(
+                borderSide: BorderSide(
+                  color: hasError ? Colors.red : Colors.black.withAlpha(100),
+                  width: 1.0,
+                ),
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderSide: BorderSide(
+                  color: hasError ? Colors.red : Colors.black.withAlpha(100),
+                  width: 1.0,
+                ),
+              ),
+              errorBorder: const OutlineInputBorder(
+                borderSide: BorderSide(color: Colors.red, width: 1.0),
+              ),
+              border: OutlineInputBorder(
+                borderSide: BorderSide(
+                  color: hasError ? Colors.red : Colors.black.withAlpha(100),
+                  width: 1.0,
+                ),
+              ),
+            ),
+          ),
+          if (hasError)
+            Padding(
               padding: const EdgeInsets.only(top: 6),
               child: Text(
-                message,
+                errorMessage.isNotEmpty ? errorMessage : 'សូមបំពេញលេខទូរស័ព្ទ',
                 style: const TextStyle(color: Colors.red, fontSize: 12),
               ),
-            );
-          }),
+            ),
         ],
       ),
     );
   }
 
-  Widget _buildDataListCustomer(List<Map<String, String>> seats) => Padding(
+  Widget _buildDataListCustomer(List<Map<String, String>> seats, bool isGo) => Padding(
         padding: const EdgeInsets.symmetric(horizontal: AppPadding.large),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -405,7 +412,9 @@ class PassengerDetailScreen extends GetView<PassengerDetailController> {
                 itemBuilder: (context, index) {
                   final seatNumber = seats[index];
                   final seatLabel = seatNumber['label'] ?? seatNumber['value'];
-                  final seatId = seatNumber['value'] ?? index.toString();
+                  final seatId = isGo
+                      ? "go_${seatNumber['value'] ?? index.toString()}"
+                      : "back_${seatNumber['value'] ?? index.toString()}";
 
                   return Column(
                     crossAxisAlignment: CrossAxisAlignment.start,

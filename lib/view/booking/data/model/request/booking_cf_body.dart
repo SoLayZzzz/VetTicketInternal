@@ -5,7 +5,7 @@ class BookingCfBody {
   final List<String> journeyDate;
   final List<String> journeyId;
   final String journeyType;
-  final String markup;
+  final List<String> markup;
   final String name;
   final String nationally;
   final List<String> seatGender;
@@ -43,7 +43,7 @@ class BookingCfBody {
       'journeyDate': journeyDate.join(','),
       'journeyId': journeyId.join(','),
       'journeyType': journeyType,
-      'markup': markup,
+      'markup': markup.join(','),
       'name': name,
       'nationally': nationally,
       'seatGender': seatGender.join(','),

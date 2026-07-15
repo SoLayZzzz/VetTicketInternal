@@ -24,9 +24,13 @@ class BookingController extends StateController<BookingState> {
       }
 
       getAgrument(
-        transactionId: arg['transactionId'],
+        transactionId: arg['transactionId'] ?? '',
         totalPrice: totalPrice,
-        totalSeat: arg['totalSeat'],
+        totalSeat: arg['totalSeat'] ?? '',
+        goMarkup: arg['goMarkup'],
+        returnMarkup: arg['returnMarkup'],
+        goSeatPrice: arg['goSeatPrice'],
+        returnSeatPrice: arg['returnSeatPrice'],
       );
       getTransaction();
     }
@@ -38,15 +42,27 @@ class BookingController extends StateController<BookingState> {
     required String transactionId,
     required double totalPrice,
     required String totalSeat,
+    int? goMarkup,
+    int? returnMarkup,
+    String? goSeatPrice,
+    String? returnSeatPrice,
   }) {
     uiState.value.transactionId = transactionId;
     uiState.value.totalPrice = totalPrice;
     uiState.value.totalSeat = totalSeat;
+    uiState.value.goMarkup = goMarkup ?? 0;
+    uiState.value.returnMarkup = returnMarkup ?? 0;
+    uiState.value.goSeatPrice = goSeatPrice;
+    uiState.value.returnSeatPrice = returnSeatPrice;
 
     print("======== Transaction get argument ========");
     print("Transaction ID: $transactionId");
     print("Total Price: $totalPrice");
     print("Total Seat: $totalSeat");
+    print("Go Markup: $goMarkup");
+    print("Return Markup: $returnMarkup");
+    print("Go Seat Price: $goSeatPrice");
+    print("Return Seat Price: $returnSeatPrice");
     print("===========================================");
   }
 

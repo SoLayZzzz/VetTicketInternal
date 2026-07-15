@@ -23,6 +23,14 @@ class NetworkDataSource extends GetConnect {
   void onInit() {
     httpClient.timeout = const Duration(seconds: 30);
 
+    var baseUrl = BaseUrl.baseUrlTest;
+    if (Platform.isAndroid && baseUrl.contains('localhost')) {
+      baseUrl = baseUrl.replaceAll('localhost', '10.0.2.2');
+    } else if (Platform.isAndroid && baseUrl.contains('127.0.0.1')) {
+      baseUrl = baseUrl.replaceAll('127.0.0.1', '10.0.2.2');
+    }
+    httpClient.baseUrl = baseUrl;
+
     httpClient.addRequestModifier<dynamic>((request) async {
       // ✅ Add Authorization header if token exists (skip login API)
       final path = request.url.path;
@@ -43,12 +51,22 @@ class NetworkDataSource extends GetConnect {
         }
       }
 
-      // ✅ Append base URL
-      const baseUrl = BaseUrl.baseUrlTest;
-      final newUrl = Uri.parse(baseUrl).resolve(request.url.path);
-      final query = request.url.queryParameters;
+      // ✅ Append base URL if not already matching the target base URL
+      if (!request.url.toString().startsWith(baseUrl)) {
+        final baseUri = Uri.parse(baseUrl);
+        final cleanPath = request.url.path.startsWith('/')
+            ? request.url.path.substring(1)
+            : request.url.path;
+        final resolvedBase = baseUri.path.endsWith('/')
+            ? baseUri
+            : baseUri.replace(path: '${baseUri.path}/');
+        final newUrl = resolvedBase.resolve(cleanPath);
+        final query = request.url.queryParameters;
 
-      return request.copyWith(url: newUrl.replace(queryParameters: query));
+        return request.copyWith(url: newUrl.replace(queryParameters: query));
+      }
+
+      return request;
     });
 
     httpClient.addResponseModifier((request, response) async {

@@ -72,9 +72,15 @@ class PassengerDetailController extends StateController<PasengerDetailState> {
       uiState.value.selectedNationalityId.value = 1;
     }
 
-    // ✅ Start watching input for error clearing
+    // ✅ Start watching input for error clearing and synchronization
     uiState.value.phoneController.addListener(() {
       final text = uiState.value.phoneController.text.trim();
+
+      // One-way sync to Return phone controller
+      if (uiState.value.phoneBackController.text.trim() != text) {
+        uiState.value.phoneBackController.text = uiState.value.phoneController.text;
+      }
+
       if (!uiState.value.hasSubmitted.value) return;
 
       if (text.isEmpty) {
@@ -94,6 +100,27 @@ class PassengerDetailController extends StateController<PasengerDetailState> {
       uiState.value.phoneErrorMessage.value = '';
     });
 
+    uiState.value.phoneBackController.addListener(() {
+      final text = uiState.value.phoneBackController.text.trim();
+      if (!uiState.value.hasSubmitted.value) return;
+
+      if (text.isEmpty) {
+        uiState.value.showPhoneErrorBack.value = true;
+        uiState.value.phoneErrorMessageBack.value = 'សូមបំពេញលេខទូរស័ព្ទ';
+        return;
+      }
+
+      final hasInvalidLength = text.length < 8 || text.length > 10;
+      if (hasInvalidLength) {
+        uiState.value.showPhoneErrorBack.value = true;
+        uiState.value.phoneErrorMessageBack.value = 'លេខលេខទូរស័ព្ទមិនត្រឹមត្រូវ';
+        return;
+      }
+
+      uiState.value.showPhoneErrorBack.value = false;
+      uiState.value.phoneErrorMessageBack.value = '';
+    });
+
     fetchStations();
     // getNational();
   }
@@ -107,14 +134,40 @@ class PassengerDetailController extends StateController<PasengerDetailState> {
   void onTapGender(String seatId, int genderValue) {
     uiState.value.passengerGenders[seatId] = genderValue;
 
+    // One-way sync: If the selected seat is in the "go" trip (e.g. starts with 'go_'),
+    // find its index and automatically update the corresponding seat in the "back" trip.
+    if (seatId.startsWith("go_")) {
+      final rawSeatId = seatId.substring(3); // remove 'go_'
+      final goIndex = uiState.value.selectedSeats.indexWhere((seat) => (seat['value'] ?? '') == rawSeatId);
+      if (goIndex != -1 && goIndex < uiState.value.selectedSeatback.length) {
+        final backSeatVal = uiState.value.selectedSeatback[goIndex]['value'] ?? '';
+        if (backSeatVal.isNotEmpty) {
+          uiState.value.passengerGenders["back_$backSeatVal"] = genderValue;
+        }
+      }
+    }
+
     if (uiState.value.showGenderError.value) {
       final con = uiState.value;
-      final allSeats = [...con.selectedSeats, ...con.selectedSeatback];
-      final hasMissing = allSeats.any((seat) {
+      bool hasMissing = false;
+      for (var seat in con.selectedSeats) {
         final id = seat['value'] ?? '';
-        final g = con.passengerGenders[id];
-        return g == null || g == 0;
-      });
+        final g = con.passengerGenders["go_$id"];
+        if (g == null || g == 0) {
+          hasMissing = true;
+          break;
+        }
+      }
+      if (!hasMissing) {
+        for (var seat in con.selectedSeatback) {
+          final id = seat['value'] ?? '';
+          final g = con.passengerGenders["back_$id"];
+          if (g == null || g == 0) {
+            hasMissing = true;
+            break;
+          }
+        }
+      }
       con.showGenderError.value = hasMissing;
     }
   }
@@ -213,6 +266,8 @@ class PassengerDetailController extends StateController<PasengerDetailState> {
     // Reset error flags
     con.showPhoneError.value = false;
     con.phoneErrorMessage.value = '';
+    con.showPhoneErrorBack.value = false;
+    con.phoneErrorMessageBack.value = '';
     con.showNationalityError.value = false;
     con.showGenderError.value = false;
 
@@ -232,14 +287,42 @@ class PassengerDetailController extends StateController<PasengerDetailState> {
     }
     con.showPhoneError.value = hasPhoneError;
 
+    // Validate back phone if round trip
+    bool hasPhoneErrorBack = false;
+    if (con.selectedSeatback.isNotEmpty) {
+      final phoneTextBack = con.phoneBackController.text.trim();
+      final phoneLenBack = phoneTextBack.length;
+      if (phoneTextBack.isEmpty) {
+        hasPhoneErrorBack = true;
+        con.phoneErrorMessageBack.value = 'សូមបំពេញលេខទូរស័ព្ទ';
+      } else if (phoneLenBack < 8 || phoneLenBack > 10) {
+        hasPhoneErrorBack = true;
+        con.phoneErrorMessageBack.value = 'លេខលេខទូរស័ព្ទមិនត្រឹមត្រូវ';
+      } else {
+        hasPhoneErrorBack = false;
+        con.phoneErrorMessageBack.value = '';
+      }
+      con.showPhoneErrorBack.value = hasPhoneErrorBack;
+    }
+
     // Validate gender per seat
     bool hasGenderError = false;
-    final allSeats = [...con.selectedSeats, ...con.selectedSeatback];
-    for (var seat in allSeats) {
+    for (var seat in con.selectedSeats) {
       final id = seat['value'] ?? '';
-      if (con.passengerGenders[id] == null || con.passengerGenders[id] == 0) {
+      final g = con.passengerGenders["go_$id"];
+      if (g == null || g == 0) {
         hasGenderError = true;
         break;
+      }
+    }
+    if (!hasGenderError) {
+      for (var seat in con.selectedSeatback) {
+        final id = seat['value'] ?? '';
+        final g = con.passengerGenders["back_$id"];
+        if (g == null || g == 0) {
+          hasGenderError = true;
+          break;
+        }
       }
     }
     con.showGenderError.value = hasGenderError;
@@ -252,10 +335,10 @@ class PassengerDetailController extends StateController<PasengerDetailState> {
     con.showNationalityError.value = hasNationalError;
 
     print(
-        '🧾 [Passenger] Validation: phoneLen=$phoneLen phoneError=$hasPhoneError genderError=$hasGenderError nationalityId=${con.selectedNationalityId.value} nationalityError=$hasNationalError');
+        '🧾 [Passenger] Validation: phoneLen=$phoneLen phoneError=$hasPhoneError phoneErrorBack=$hasPhoneErrorBack genderError=$hasGenderError nationalityId=${con.selectedNationalityId.value} nationalityError=$hasNationalError');
 
     // Show error if any
-    if (hasPhoneError || hasGenderError || hasNationalError) {
+    if (hasPhoneError || hasPhoneErrorBack || hasGenderError || hasNationalError) {
       print('🧾 [Passenger] Submit blocked by validation errors');
       return;
     }
@@ -347,10 +430,16 @@ class PassengerDetailController extends StateController<PasengerDetailState> {
 
     /// ✅ Seat numbers and genders
     final seatNumbers = allSeats.map((seat) => seat['value'] ?? '').toList();
-    final seatGenders = allSeats.map((seat) {
-      final id = seat['value'] ?? '';
-      return uiState.value.passengerGenders[id]?.toString() ?? '1';
-    }).toList();
+    final seatGenders = [
+      ...uiState.value.selectedSeats.map((seat) {
+        final id = seat['value'] ?? '';
+        return uiState.value.passengerGenders["go_$id"]?.toString() ?? '1';
+      }),
+      ...uiState.value.selectedSeatback.map((seat) {
+        final id = seat['value'] ?? '';
+        return uiState.value.passengerGenders["back_$id"]?.toString() ?? '1';
+      }),
+    ];
 
     /// ✅ Station & Journey Info
     final List<String> boardingIds = [];
@@ -372,7 +461,15 @@ class PassengerDetailController extends StateController<PasengerDetailState> {
       dates.add(booking.returnDate ?? '');
     }
 
-    final journeyType = booking.returnDate?.isNotEmpty == true ? '2' : '1';
+    final journeyType = journeyIds.length == 2 ? '2' : '1';
+
+    final List<String> markups = [];
+    if (uiState.value.selectedSeats.isNotEmpty) {
+      markups.add(booking.goMarkup.toString());
+    }
+    if (uiState.value.selectedSeatback.isNotEmpty) {
+      markups.add(booking.returnMarkup.toString());
+    }
 
     final totalSeats = allSeats.length;
     final double goPerSeatMarkup = booking.goMarkup.toDouble();
@@ -398,6 +495,13 @@ class PassengerDetailController extends StateController<PasengerDetailState> {
         '🧾 [Passenger] Computed totalAmount(with per-seat markup)=${totalAmount.toStringAsFixed(2)} seats=${allSeats.length} seatPrices=$seatPrices');
 
     final phone = uiState.value.phoneController.text.trim();
+    final phoneBack = uiState.value.phoneBackController.text.trim();
+    final String finalPhone;
+    if (uiState.value.selectedSeatback.isNotEmpty && phoneBack.isNotEmpty) {
+      finalPhone = '$phone,$phoneBack';
+    } else {
+      finalPhone = phone;
+    }
 
     /// ✅ Build request body
     final body = BookingCfBody(
@@ -406,7 +510,7 @@ class PassengerDetailController extends StateController<PasengerDetailState> {
       journeyDate: dates,
       journeyId: journeyIds,
       journeyType: journeyType,
-      markup: booking.markup.toString(),
+      markup: markups,
       name: 'admin',
       email: 'kkk@gmail.com',
       // nationally: uiState.value.selectedNationalityId.value.toString(),
@@ -415,7 +519,7 @@ class PassengerDetailController extends StateController<PasengerDetailState> {
       seatJourney: allSeats.map((s) => s['journeyId'] ?? '').toList(),
       seatNum: seatNumbers,
       seatPrice: seatPrices,
-      telephone: phone,
+      telephone: finalPhone,
       totalAmount: totalAmount.toStringAsFixed(2),
       totalSeat: totalSeats.toString(),
     );
@@ -427,7 +531,7 @@ class PassengerDetailController extends StateController<PasengerDetailState> {
     print("📋 journeyDate: $dates");
     print("📋 journeyId: $journeyIds");
     print("📋 journeyType: $journeyType");
-    print("📋 markup: ${booking.markup}");
+    print("📋 markup: $markups");
     print("📋 name: admin");
     print("📋 email: kkk@gmail.com");
     print("📋 nationally: ${uiState.value.selectedNationalityId.value}");
@@ -479,6 +583,10 @@ class PassengerDetailController extends StateController<PasengerDetailState> {
             'status': response.body?.status,
             'totalPrice': totalAmount.toStringAsFixed(2),
             'totalSeat': totalSeats.toString(),
+            'goMarkup': booking.goMarkup,
+            'returnMarkup': booking.returnMarkup,
+            'goSeatPrice': booking.goSeatPrice,
+            'returnSeatPrice': booking.returnSeatPrice,
           });
         });
 

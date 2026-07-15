@@ -14,6 +14,11 @@ class PasengerDetailState {
   final phoneController = TextEditingController();
   final RxBool showPhoneError = false.obs;
   final RxString phoneErrorMessage = ''.obs;
+
+  final phoneBackController = TextEditingController();
+  final RxBool showPhoneErrorBack = false.obs;
+  final RxString phoneErrorMessageBack = ''.obs;
+
   final RxBool showGenderError = false.obs;
   final RxBool showNationalError = false.obs;
 
